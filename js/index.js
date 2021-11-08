@@ -1,12 +1,18 @@
+// GLOBAL VARIABLES
+
 let globalX = 0;
 let globalY = 0;
 let globalSpeed = 0;
 let trueDirection = "";
 let mousex = 0;
 let mousey = 0;
-var drag = false;
-var dragStart;
-var dragEnd;
+let drag = false;
+let dragStart;
+let dragEnd;
+let globalGravity = 1;
+let globalJumpSpeed = -15;
+
+// CLASSES
 
 class Sprite {
   constructor(x, y, width, height, image, speed) {
@@ -170,6 +176,10 @@ class Player extends Sprite {
     }
   }
 
+  move() {
+    this.x += this.speed;
+  }
+
   Jump() {
     this.y += this.accelerateUp;
     this.accelerateUp += this.accelerateDown;
@@ -182,7 +192,7 @@ class Player extends Sprite {
   }
 }
 
-/////// START OF CODE
+// START OF CODE
 
 let canvas = document.getElementById("canvas");
 ctx = canvas.getContext("2d");
@@ -222,19 +232,21 @@ for (i = 0; i < land.length; i++) {
     images[i][j].loadImage();
   }
 }
+
 let player1 = new Player(200, 320, 72, 97, player, 0);
+
 player1.loadImage();
-let tempMove = false;
+
 document.addEventListener("keydown", (e) => {
-  tempMove = true;
   player1.moving(e);
   if (e.keyCode === 38 && player1.allowedToJump) {
     player1.jumping = true;
     player1.allowedToJump = false;
-    player1.accelerateDown = 1;
-    player1.accelerateUp = -15;
+    player1.accelerateDown = globalGravity;
+    player1.accelerateUp = globalJumpSpeed;
   }
 });
+
 document.addEventListener("keyup", (e) => {
   if (e.keyCode === 37 || e.keyCode === 39) {
     player1.stop();
@@ -250,24 +262,13 @@ function moveLand(player1SpeedDirection) {
     }
   }
   if (player1SpeedDirection < 0) {
-    if (player1.x + globalX < 200) {
+    if (player1.x + globalX < 400) {
       globalSpeed = -player1.speed;
     }
   }
 }
 
-function movingLandStop() {
-  globalSpeed = 0;
-}
-function updateCanvas() {
-  if (trueDirection === "right") {
-    player1.moving({ keyCode: 39 });
-  }
-
-  if (trueDirection === "left") {
-    player1.moving({ keyCode: 37 });
-  }
-
+function checkCollision() {
   if (player1.direction === "right")
     if (
       images[Math.floor(player1.y / 70)][
@@ -298,7 +299,7 @@ function updateCanvas() {
       movingLandStop();
     }
 
-  if (player1.jumping)
+  if (player1.jumping) {
     if (
       images[Math.floor((player1.y + player1.height) / 70)][
         // THE 5 HERE IS CUSHION FOR PLAYER
@@ -308,7 +309,6 @@ function updateCanvas() {
         Math.floor((player1.x + player1.width - 5) / 70)
       ].mass === "solid"
     ) {
-      // MODIFY THIS INTO ITS OWN FUNCTION
       player1.jumping = false;
       player1.allowedToJump = true;
       player1.accelerateUp = 0;
@@ -322,6 +322,59 @@ function updateCanvas() {
         1;
       movingLandStop();
     }
+
+    // THIS IS FOR FUTURE USE // CREATES A SUCTION UP EFFECT
+    //   if (
+    //     images[Math.floor(player1.y / 70)][
+    //       // THE 5 HERE IS CUSHION FOR PLAYER
+    //       Math.floor((player1.x + 5) / 70)
+    //     ].mass === "solid" ||
+    //     images[Math.floor((player1.y + player1.height) / 70)][
+    //       Math.floor((player1.x + player1.width - 5) / 70)
+    //     ].mass === "solid"
+    //   ) {
+    //     console.log("hit in the head", player1.jumping);
+    //     player1.jumping = true;
+    //     player1.allowedToJump = false;
+    //     player1.accelerateUp = -1;
+    //     player1.accelerateDown = -globalGravity;
+    //     player1.allowedToJump = true;
+    //     // player1.y =
+    //     //   images[Math.floor((player1.y + player1.height) / 70)][
+    //     //     Math.floor(player1.x / 70)
+    //     //   ].y -
+    //     //   player1.height -
+    //     //   1;
+    //     movingLandStop();
+    //   }
+    // }
+
+    if (
+      images[Math.floor((player1.y - 10) / 70)][
+        // THE 5 HERE IS CUSHION FOR PLAYER
+        Math.floor((player1.x + 10) / 70)
+      ].mass === "solid" ||
+      images[Math.floor((player1.y - 10) / 70)][
+        // THE 5 HERE IS CUSHION FOR PLAYER
+        Math.floor((player1.x + player1.width - 5) / 70)
+      ].mass === "solid"
+    ) {
+      console.log("hit in the head", player1.jumping);
+      player1.jumping = false;
+      player1.allowedToJump = false;
+      player1.accelerateUp = 0;
+      player1.accelerateDown = globalGravity + 0.2;
+      player1.allowedToJump = false;
+      player1.y += 5;
+      // player1.y =
+      //   images[Math.floor((player1.y + player1.height) / 70)][
+      //     Math.floor(player1.x / 70)
+      //   ].y -
+      //   player1.height -
+      //   1;
+      movingLandStop();
+    }
+  }
   if (
     !player1.jumping &&
     images[Math.floor((player1.y + player1.height + 1) / 70)][
@@ -334,9 +387,26 @@ function updateCanvas() {
     player1.jumping = true;
     player1.allowedToJump = false;
     player1.accelerateUp = 0;
-    player1.accelerateDown = 1;
+    player1.accelerateDown = globalGravity;
   }
+}
+
+function movingLandStop() {
+  globalSpeed = 0;
+}
+
+function updateCanvas() {
+  if (trueDirection === "right") {
+    player1.moving({ keyCode: 39 });
+  }
+
+  if (trueDirection === "left") {
+    player1.moving({ keyCode: 37 });
+  }
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  checkCollision();
 
   for (i = 0; i < land.length; i++) {
     for (j = 0; j < land[i].length; j++) {
@@ -344,11 +414,12 @@ function updateCanvas() {
     }
   }
 
-  player1.x += player1.speed;
+  player1.move();
   player1.Jump();
   globalX += globalSpeed;
   moveLand(player1.speed);
   player1.draw();
   requestAnimationFrame(updateCanvas);
 }
+
 updateCanvas();
