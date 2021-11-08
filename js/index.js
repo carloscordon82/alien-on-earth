@@ -197,12 +197,13 @@ class Player extends Sprite {
 let canvas = document.getElementById("canvas");
 ctx = canvas.getContext("2d");
 let tempGlobal = 0;
-
+let tempx = 0;
 canvas.addEventListener("mousedown", function (event) {
   dragStart = {
     mousex: event.pageX - canvas.offsetLeft,
     mousey: event.pageY - canvas.offsetTop,
   };
+  tempx = mousex;
   tempGlobal = globalX;
   console.log("assigning");
   drag = true;
@@ -210,6 +211,18 @@ canvas.addEventListener("mousedown", function (event) {
 
 canvas.addEventListener("mouseup", function (event) {
   drag = false;
+  console.log(dragStart);
+  images[Math.floor(dragStart.mousey / 70)][
+    Math.floor((dragStart.mousex - globalX) / 70)
+  ].image = "images/grassMid.png";
+  images[Math.floor(dragStart.mousey / 70)][
+    Math.floor((dragStart.mousex - globalX) / 70)
+  ].mass = "solid";
+  images[Math.floor(dragStart.mousey / 70)][
+    Math.floor((dragStart.mousex - globalX) / 70)
+  ].loadImage();
+  console.log("mouse", globalX);
+  // images;
 });
 
 canvas.addEventListener("mousemove", function (event) {
