@@ -38,6 +38,17 @@ class Block extends Sprite {
   }
 }
 
+class Score extends Sprite {
+  constructor(x, y, width, height, image) {
+    super(x, y, width, height, image);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.image = image;
+  }
+}
+
 class Player extends Sprite {
   constructor(x, y, width, height, imageGroup, speed) {
     super(x, y, width, height, "", speed);
@@ -191,7 +202,9 @@ injectHtml();
 let pickHTML = document.querySelectorAll(".pickhtml");
 let downloadTxt = document.querySelector(".download");
 downloadTxt.addEventListener("click", function (event) {
-  download("json.txt", JSON.stringify(exportGrid));
+  let stringExport = JSON.stringify(exportGrid);
+  //  stringExport.replace(/\"/, "");
+  download("json.txt", stringExport);
 });
 let globalX = 0;
 let globalY = 0;
@@ -210,11 +223,46 @@ let customLandImage = "";
 let customLandMass = "";
 let customLandCode = "";
 let customLandValue = 0;
+let score = [];
 
 // ctx.scale(1, 1);
 // ctx.canvas.width = 400;
 // ctx.canvas.height = 300;
 attachListeners();
+
+function loadNumbers() {
+  for (i = 0; i < 10; i++) {
+    score.push(new Score(10 + i * 30, 10, 30, 38, `images/hud_${i}.png`));
+    score[i].loadImage();
+  }
+}
+loadNumbers();
+
+let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
+scoreBoard.loadImage();
+
+function displayScore(total) {
+  let scorePos = 0;
+  let totalArr = String(total)
+    .split("")
+    .map((total) => {
+      return Number(total);
+    });
+  console.log("array", totalArr.length);
+  if (totalArr.length === 1) {
+    scorePos = 167;
+  } else {
+    scorePos = 175 - totalArr.length * 15;
+  }
+  scoreBoard.x = 80 - globalX;
+  scoreBoard.draw();
+  totalArr.forEach((element) => {
+    score[Number(element)].x = scorePos - globalX;
+    score[Number(element)].y = 50;
+    score[Number(element)].draw();
+    scorePos += 40;
+  });
+}
 
 let tempGlobal = 0;
 let tempx = 0;
@@ -323,7 +371,7 @@ function buildLand(land) {
 }
 buildLand(land1);
 
-let player1 = new Player(200, 320, 72, 97, player, 0);
+let player1 = new Player(300, 120, 72, 97, player, 0);
 
 player1.loadImage();
 
@@ -496,10 +544,10 @@ function checkCollision() {
     !player1.jumping &&
     images[Math.floor((player1.y + player1.height + 1) / 70)][
       Math.floor(player1.x / 70)
-    ].mass === "air" &&
+    ].mass != "solid" &&
     images[Math.floor((player1.y + player1.height + 1) / 70)][
       Math.floor((player1.x + player1.width) / 70)
-    ].mass === "air"
+    ].mass != "solid"
   ) {
     player1.jumping = true;
     player1.allowedToJump = false;
@@ -515,7 +563,7 @@ function grabObject(y, x) {
   images[y][x].code = "lvl1blk7";
   images[y][x].mass = "air";
   images[y][x].loadImage();
-  player1.score += images[y][x].value;
+  player1.score += +images[y][x].value;
 }
 
 function checkObjects() {
@@ -566,7 +614,8 @@ function updateCanvas() {
   globalX += globalSpeed;
   moveLand(player1.speed);
   player1.draw();
-  console.log(player1.score);
+  displayScore(player1.score);
+
   requestAnimationFrame(updateCanvas);
 }
 
