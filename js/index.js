@@ -203,7 +203,7 @@ let pickHTML = document.querySelectorAll(".pickhtml");
 let downloadTxt = document.querySelector(".download");
 downloadTxt.addEventListener("click", function (event) {
   let stringExport = JSON.stringify(exportGrid);
-  //  stringExport.replace(/\"/, "");
+  stringExport.replace(/"/, " ");
   download("json.txt", stringExport);
 });
 let globalX = 0;
@@ -241,6 +241,9 @@ loadNumbers();
 let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
 scoreBoard.loadImage();
 
+let cloud1 = new Sprite(30, 100, 128, 71, "images/cloud1.png");
+cloud1.loadImage();
+
 function displayScore(total) {
   let scorePos = 0;
   let totalArr = String(total)
@@ -248,7 +251,6 @@ function displayScore(total) {
     .map((total) => {
       return Number(total);
     });
-  console.log("array", totalArr.length);
   if (totalArr.length === 1) {
     scorePos = 167;
   } else {
@@ -555,10 +557,7 @@ function checkCollision() {
     player1.accelerateDown = globalGravity;
   }
 }
-let erasethis = "";
 function grabObject(y, x) {
-  erasethis = images[y][x];
-  console.log(erasethis);
   images[y][x].image = "images/air.png";
   images[y][x].code = "lvl1blk7";
   images[y][x].mass = "air";
@@ -588,7 +587,30 @@ function spring(a, b) {
     images[a][b].loadImage();
   }, 300);
 }
-
+function drawClouds() {
+  let randomY = 0;
+  // BIGGER CLOUDS
+  for (i = 0; i < 40; i++) {
+    if (randomY === 200) randomY = 0;
+    cloud1.width = 128;
+    cloud1.height = 71;
+    cloud1.y = 100 + randomY;
+    cloud1.x = i * 700 - globalX / 3;
+    cloud1.draw();
+    randomY += 40;
+  }
+  // SMALLER CLOUDS
+  randomY = 0;
+  for (i = 0; i < 40; i++) {
+    if (randomY === 100) randomY = 0;
+    cloud1.x = i * 400 - globalX / 2;
+    cloud1.width = 64;
+    cloud1.height = 35;
+    cloud1.y = 300 + randomY;
+    cloud1.draw();
+    randomY += 10;
+  }
+}
 function updateCanvas() {
   // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS
   if (trueDirection === "right") {
@@ -600,6 +622,7 @@ function updateCanvas() {
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawClouds();
 
   for (i = 0; i < images.length; i++) {
     for (j = 0; j < images[i].length; j++) {
@@ -609,6 +632,7 @@ function updateCanvas() {
   // ORDER HERE MATTERS
   checkCollision();
   checkObjects();
+
   player1.move();
   player1.Jump();
   globalX += globalSpeed;
