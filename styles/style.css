@@ -1,9 +1,14 @@
 body {
   padding: 0;
-  text-align: center;
 }
 
-#game-board {
-  float: left;
-  padding: 20px 0px;
+.game-board {
+  display: flex;
+}
+
+.pickhtml {
+  border: 3px solid white;
+}
+.side-panel {
+  display: flex;
 }
