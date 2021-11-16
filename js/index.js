@@ -1,5 +1,3 @@
-// GLOBAL VARIABLES
-
 // CLASSES
 
 class Sprite {
@@ -29,12 +27,122 @@ class Sprite {
   }
 }
 
+class Dialog extends Sprite {
+  constructor(x, y, width, height, image) {
+    super(x, y, width, height, image);
+  }
+
+  draw() {
+    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+  }
+
+  showDialog() {
+    // for (i = 0; i <= 650; i++) {
+    //   this.height = (i * 237) / 650;
+    //   this.width = i;
+    //   this.x = ctx.canvas.width / 2 - this.width / 2;
+    //   this.y = ctx.canvas.height / 2 - this.height / 2;
+    //   this.draw();
+    // }
+    setTimeout(() => {
+      ctx.fillStyle = "#e0d1af";
+      ctx.globalAlpha = 0.9;
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalAlpha = 1;
+      toolBoard.draw();
+      this.x = ctx.canvas.width / 2 - this.width / 2;
+      this.y = ctx.canvas.height / 2 - this.height / 2;
+      this.draw();
+    }, 10);
+  }
+}
+
 class Block extends Sprite {
-  constructor(x, y, width, height, image, mass, code, value) {
+  constructor(x, y, width, height, image, mass, code, value, animated) {
     super(x, y, width, height, image);
     this.mass = mass;
     this.code = code;
     this.value = value;
+    this.animated = animated;
+    this.accelerateUp = 0;
+    this.accelerateDown = 0;
+    this.bounceTarget = 0;
+  }
+
+  draw() {
+    if (this.mass === "brownBuilding") {
+      ctx.fillStyle = "#e0d1af";
+      ctx.fillRect(this.x + globalX, this.y + globalY, this.width, this.height);
+    }
+
+    ctx.drawImage(
+      this.image,
+      this.x + globalX,
+      this.y + globalY,
+      this.width,
+      this.height
+    );
+  }
+
+  bounce() {
+    if (this.bounceTarget) {
+      this.y += this.accelerateUp;
+      this.accelerateUp += this.accelerateDown;
+      pushCoin.y += this.accelerateUp;
+      if (this.y >= this.bounceTarget) {
+        this.y = this.bounceTarget;
+        this.bounceTarget = 0;
+      }
+    }
+  }
+}
+
+class AnimatedBlock extends Sprite {
+  constructor(x, y, width, height, imagegroup, type) {
+    super(x, y, width, height, imagegroup);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.imagegroup = imagegroup;
+    this.type = type;
+    this.pushCoinCounter = 1;
+  }
+
+  loadImages() {
+    for (let i = 0; i < this.imagegroup.length; i++) {
+      const newImage = new Image();
+      newImage.src = this.imagegroup[i];
+      this.imagegroup[i] = newImage;
+    }
+  }
+
+  draw(xc, yc) {
+    if (this.type === "loop") {
+      if (globalCoinStep >= this.imagegroup.length) globalCoinStep = 0;
+      ctx.drawImage(
+        this.imagegroup[globalCoinStep],
+        xc + globalX,
+        yc + globalY,
+        this.width,
+        this.height
+      );
+    } else {
+      if (this.pushCoinCounter === this.imagegroup.length - 1)
+        this.pushCoinCounter = 0;
+
+      if (this.pushCoinCounter > 0) {
+        this.pushCoinCounter++;
+
+        ctx.drawImage(
+          this.imagegroup[this.pushCoinCounter],
+          this.x + globalX,
+          this.y + globalY - pushCoin.pushCoinCounter * 5,
+          this.width,
+          this.height
+        );
+      }
+    }
   }
 }
 
@@ -49,6 +157,56 @@ class Score extends Sprite {
   }
 }
 
+class Enemy extends Sprite {
+  constructor(x, y, width, height, images) {
+    super(x, y, width, height);
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.frame = 0;
+    this.images = images;
+    this.sideCount = 0;
+    this.direction = "right";
+  }
+
+  draw() {
+    if (this.frame === this.images.left.length) this.frame = 0;
+    if (this.direction === "left") {
+      ctx.drawImage(
+        this.images.left[this.frame],
+        this.x + globalX,
+        this.y + globalY,
+        this.width,
+        this.height
+      );
+      this.frame++;
+    } else {
+      ctx.drawImage(
+        this.images.right[this.frame],
+        this.x + globalX,
+        this.y + globalY,
+        this.width,
+        this.height
+      );
+      this.frame++;
+    }
+  }
+
+  loadImages() {
+    for (let i = 0; i < this.images.left.length; i++) {
+      const newImage = new Image();
+      newImage.src = this.images.left[i];
+      this.images.left[i] = newImage;
+    }
+
+    for (let i = 0; i < this.images.right.length; i++) {
+      const newImage = new Image();
+      newImage.src = this.images.right[i];
+      this.images.right[i] = newImage;
+    }
+  }
+}
 class Player extends Sprite {
   constructor(x, y, width, height, imageGroup, speed) {
     super(x, y, width, height, "", speed);
@@ -62,69 +220,113 @@ class Player extends Sprite {
     this.stepsLeft = 0;
     this.intent = "";
     this.score = 0;
+    this.hurting = false;
+    this.canGetDamage = true;
+    this.health = 12;
+    this.foundDrawing = false;
   }
 
   draw() {
-    if (this.direction === "right")
-      if (!this.jumping) {
-        this.stepsLeft = 0;
-        if (this.stepsRight === this.imageGroup.right.length - 1) {
-          this.stepsRight = 0;
-        } else {
-          this.stepsRight++;
-        }
-        ctx.drawImage(
-          this.imageGroup.right[this.stepsRight],
-          this.x + globalX,
-          this.y + globalY,
-          this.width,
-          this.height
-        );
-      } else
-        ctx.drawImage(
-          this.imageGroup.jumping_right,
-          this.x + globalX,
-          this.y + globalY,
-          this.width,
-          this.height
-        );
-
-    if (this.direction === "left")
-      if (!this.jumping) {
-        this.stepsRight = 0;
-        if (this.stepsLeft === this.imageGroup.left.length - 1) {
+    if (!this.hurting) {
+      if (this.direction === "right")
+        if (!this.jumping) {
           this.stepsLeft = 0;
+          if (this.stepsRight === this.imageGroup.right.length - 1) {
+            this.stepsRight = 0;
+          } else {
+            this.stepsRight++;
+          }
+          ctx.drawImage(
+            this.imageGroup.right[this.stepsRight],
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
         } else {
-          this.stepsLeft++;
+          ctx.drawImage(
+            this.imageGroup.jumping_right,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
         }
+      if (this.direction === "left")
+        if (!this.jumping) {
+          this.stepsRight = 0;
+          if (this.stepsLeft === this.imageGroup.left.length - 1) {
+            this.stepsLeft = 0;
+          } else {
+            this.stepsLeft++;
+          }
 
+          ctx.drawImage(
+            this.imageGroup.left[this.stepsLeft],
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        } else {
+          ctx.drawImage(
+            this.imageGroup.jumping_left,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        }
+      if (this.direction === "stopped_left") {
         ctx.drawImage(
-          this.imageGroup.left[this.stepsLeft],
+          this.imageGroup.stopped_left,
           this.x + globalX,
           this.y + globalY,
           this.width,
           this.height
         );
-      } else
+        this.foundDrawing = true;
+      }
+
+      if (this.direction === "stopped_right") {
         ctx.drawImage(
-          this.imageGroup.jumping_left,
+          this.imageGroup.stopped_right,
           this.x + globalX,
           this.y + globalY,
           this.width,
           this.height
         );
+        this.foundDrawing = true;
+      }
+    } else {
+      if (this.direction === "hurt_right") {
+        ctx.drawImage(
+          this.imageGroup.hurt_right,
+          this.x + globalX,
+          this.y + globalY,
+          this.width,
+          this.height
+        );
+        this.foundDrawing = true;
+      }
 
-    if (this.direction === "stopped_left") {
-      ctx.drawImage(
-        this.imageGroup.stopped_left,
-        this.x + globalX,
-        this.y + globalY,
-        this.width,
-        this.height
-      );
+      if (this.direction === "hurt_left") {
+        ctx.drawImage(
+          this.imageGroup.hurt_left,
+          this.x + globalX,
+          this.y + globalY,
+          this.width,
+          this.height
+        );
+        this.foundDrawing = true;
+      }
     }
 
-    if (this.direction === "stopped_right") {
+    if (!this.foundDrawing) {
       ctx.drawImage(
         this.imageGroup.stopped_right,
         this.x + globalX,
@@ -133,8 +335,8 @@ class Player extends Sprite {
         this.height
       );
     }
+    this.foundDrawing = false;
   }
-
   loadImage() {
     for (i = 0; i < this.imageGroup.right.length; i++) {
       let newImage = new Image();
@@ -163,9 +365,18 @@ class Player extends Sprite {
     let newImageJumpRight = new Image();
     newImageJumpRight.src = this.imageGroup.jumping_right;
     this.imageGroup.jumping_right = newImageJumpRight;
+
+    let newImageHurtRight = new Image();
+    newImageHurtRight.src = this.imageGroup.hurt_right;
+    this.imageGroup.hurt_right = newImageHurtRight;
+
+    let newImageHurtLeft = new Image();
+    newImageHurtLeft.src = this.imageGroup.hurt_left;
+    this.imageGroup.hurt_left = newImageHurtLeft;
   }
 
   moving(e) {
+    movingCount++;
     if (e.keyCode === 37) {
       this.direction = "left";
       trueDirection = "left";
@@ -178,71 +389,485 @@ class Player extends Sprite {
     }
   }
 
+  movingHit(e) {
+    movingCount++;
+    if (e.keyCode === 37) {
+      this.direction = "hurt_left";
+      // trueDirection = "left";
+      this.speed = -10;
+    }
+    if (e.keyCode === 39) {
+      this.direction = "hurt_right";
+      // trueDirection = "right";
+      this.speed = 10;
+    }
+  }
+
   move() {
+    //if (!this.hurting && this.accelerateUp === 0) this.speed = 0;
     this.x += this.speed;
   }
 
   Jump() {
     this.y += this.accelerateUp;
     this.accelerateUp += this.accelerateDown;
+    if (this.accelerateDown === 0) {
+      //
+      if (this.direction === "hurt_left") {
+        this.direction = "stopped_right";
+        this.hurting = false;
+        this.speed = 0;
+      }
+      if (this.direction === "hurt_right") {
+        this.direction = "stopped_left";
+        this.hurting = false;
+        this.speed = 0;
+      }
+
+      //}
+    }
+    if (this.hurting) {
+      if (
+        this.direction === "stopped_left" ||
+        this.direction === "stopped_right"
+      )
+        this.hurting = false;
+    }
+
+    if (!this.hurting) {
+      if (this.direction === "hurt_right") this.direction = "right";
+      if (this.direction === "hurt_left") this.direction = "left";
+    }
   }
 
   stop() {
+    movingCount = 0;
     this.speed = 0;
     if (this.direction === "right") this.direction = "stopped_right";
     if (this.direction === "left") this.direction = "stopped_left";
+  }
+
+  hurt(hitDirection) {
+    if (this.canGetDamage) {
+      this.health -= 1;
+      this.canGetDamage = false;
+      setTimeout(() => {
+        this.canGetDamage = true;
+      }, 500);
+    }
+    if (hitDirection === "left") {
+      this.hurting = true;
+      this.direction = "hurt_left";
+      this.accelerateUp = -10;
+      this.accelerateDown = 1;
+      let hurtLeft = setInterval(() => {
+        this.movingHit({ keyCode: 37 });
+      }, 33);
+      setTimeout(() => {
+        clearInterval(hurtLeft);
+      }, 200);
+    }
+
+    if (hitDirection === "right") {
+      this.hurting = true;
+      this.direction = "hurt_right";
+      this.accelerateUp = -10;
+      this.accelerateDown = 1;
+      let hurtRight = setInterval(() => {
+        this.movingHit({ keyCode: 39 });
+      }, 33);
+      setTimeout(() => {
+        clearInterval(hurtRight);
+      }, 200);
+    }
+    setTimeout(() => {
+      this.hurting = false;
+    }, 1000);
+  }
+
+  dead() {
+    this.imageGroup.stopped_right = "images/dead.png";
+    let newImageLeft = new Image();
+    newImageLeft.src = this.imageGroup.stopped_right;
+    this.imageGroup.stopped_right = newImageLeft;
+
+    this.jumping = false;
+    this.allowedToJump = true;
+    this.accelerateUp = 0;
+    this.accelerateDown = 0;
+    this.allowedToJump = true;
   }
 }
 
 // START OF CODE
 
-let canvas = document.getElementById("canvas");
-ctx = canvas.getContext("2d");
-injectHtml();
-let pickHTML = document.querySelectorAll(".pickhtml");
-let downloadTxt = document.querySelector(".download");
-downloadTxt.addEventListener("click", function (event) {
-  let stringExport = JSON.stringify(exportGrid);
-  stringExport.replace(/"/, " ");
-  download("json.txt", stringExport);
-});
 let globalX = 0;
 let globalY = 0;
+let globalCoinStep = 0;
 let globalSpeed = 0;
 let trueDirection = "";
 let mousex = 0;
 let mousey = 0;
+let hit = false;
 let drag = false;
 let dragStart;
 let dragEnd;
 let globalGravity = 1;
 let globalJumpSpeed = -15;
-let images = [[], [], [], [], [], [], [], [], [], []];
-let exportGrid = [[], [], [], [], [], [], [], [], [], []];
+let level2Arrived = false;
+let level3Arrived = false;
+let level4Arrived = false;
+let movingCount = 0;
+let superPower = false;
+
+let images = [
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+];
+let exportGrid = [
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+  [],
+];
 let customLandImage = "";
 let customLandMass = "";
 let customLandCode = "";
 let customLandValue = 0;
+let addedSpring = false;
+let addedBox = false;
 let score = [];
+let tempGlobalX = 0;
+let tempGlobalY = 0;
+let dialogOn = false;
+let pause = false;
+let tempx = 0;
+let clouds = [];
+let allFlies = [];
+let allSlimes = [];
+let allSnails = [];
+let allFireBalls = [];
+let healthBar = [];
+injectHtml();
+let canvas = document.getElementById("canvas");
+let pickHTML = document.querySelectorAll(".pickhtml");
+let toolsEarned = document.querySelector(".toolsEarned");
 
-// ctx.scale(1, 1);
-// ctx.canvas.width = 400;
-// ctx.canvas.height = 300;
+let downloadTxt = document.querySelector(".download");
+ctx = canvas.getContext("2d");
+createFlies();
+createSlimes();
+createSnails();
+createHealthBar();
+createFireBalls();
+let animatedCoin = new AnimatedBlock(5100, 100, 70, 70, coinSprite, "loop");
+let pushCoin = new AnimatedBlock(5200, 200, 70, 70, pushCoinSprite, "once");
+let toolBoard = new Sprite(400, 10, 650 / 2, 237 / 2, "images/toolBoard.png");
+let newTool = new Dialog(200, 200, 650, 261, "images/newTool.png");
+let gameOver = new Dialog(200, 200, 650, 261, "images/gameOver.png");
+
+toolBoard.loadImage();
+pushCoin.loadImages();
+animatedCoin.loadImages();
+newTool.loadImage();
+gameOver.loadImage();
+let player1 = new Player(300, 120, 72, 97, player, 0);
+let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
+clouds[0] = new Sprite(30, 100, 128, 71, "images/cloud1.png");
+clouds[1] = new Sprite(30, 100, 128, 71, "images/cloud2.png");
+clouds[2] = new Sprite(30, 100, 128, 71, "images/cloud3.png");
+let grassBackground = new Sprite(
+  0,
+  0,
+  700,
+  700,
+  "images/level1/grassBackground.png"
+);
+grassBackground.loadImage();
+
+let iceBackground = new Sprite(
+  0,
+  0,
+  700,
+  700,
+  "images/level2/iceBackground.png"
+);
+iceBackground.loadImage();
+
+let caveBackground = new Sprite(0, 700, 700, 700, "images/cave.png");
+caveBackground.loadImage();
+
 attachListeners();
+loadNumbers();
+buildLand(land1);
+player1.loadImage();
+scoreBoard.loadImage();
+clouds[0].loadImage();
+clouds[1].loadImage();
+clouds[2].loadImage();
 
-function loadNumbers() {
-  for (i = 0; i < 10; i++) {
-    score.push(new Score(10 + i * 30, 10, 30, 38, `images/hud_${i}.png`));
-    score[i].loadImage();
+function createFireBalls() {
+  for (let i = 0; i < 20; i++) {
+    allFireBalls[i] = new Enemy(400 * i + 3000, 700, 75, 75, {
+      left: [...fireBall.left],
+      right: [...fireBall.right],
+    });
+    allFireBalls[i].sideCount = Math.floor(Math.random() * 100);
+  }
+
+  allFireBalls.forEach((element) => {
+    element.loadImages();
+  });
+}
+
+function createFlies() {
+  allFlies[0] = new Enemy(690, 404.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+  allFlies[1] = new Enemy(1760, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+  allFlies[2] = new Enemy(2590, 264.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[3] = new Enemy(3240, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+  allFlies[4] = new Enemy(3950, 194.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+  allFlies[5] = new Enemy(4910, 130.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+  allFlies[6] = new Enemy(5310, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[7] = new Enemy(10100, 150, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[8] = new Enemy(10300, 250, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[9] = new Enemy(10550, 325, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[10] = new Enemy(10800, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[11] = new Enemy(10300, 150, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[12] = new Enemy(10600, 250, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[13] = new Enemy(10750, 325, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[14] = new Enemy(11000, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[15] = new Enemy(10100, 474.5, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies[16] = new Enemy(11000, 150, 72, 36, {
+    left: [...enemy1.left],
+    right: [...enemy1.right],
+  });
+
+  allFlies.forEach((element) => {
+    element.loadImages();
+  });
+}
+
+function createSlimes() {
+  // for (let i = 0; i < 20; i++) {
+  //   allSlimes.push(
+  //     new Enemy(50 + 700 * i, 400, 50, 28, {
+  //       left: [...enemy2.left],
+  //       right: [...enemy2.right],
+  //     })
+  //   );
+  //   allSlimes[i].loadImages();
+  // }
+}
+
+function createSnails() {
+  allSnails[0] = new Enemy(6530, 531, 50, 28, {
+    left: [...enemy3.left],
+    right: [...enemy3.right],
+  });
+
+  allSnails[1] = new Enemy(7250, 531, 50, 28, {
+    left: [...enemy3.left],
+    right: [...enemy3.right],
+  });
+
+  allSnails[2] = new Enemy(8000, 323, 50, 28, {
+    left: [...enemy3.left],
+    right: [...enemy3.right],
+  });
+
+  allSnails[3] = new Enemy(8570, 531, 50, 28, {
+    left: [...enemy3.left],
+    right: [...enemy3.right],
+  });
+
+  allSnails[4] = new Enemy(9770, 531, 50, 28, {
+    left: [...enemy3.left],
+    right: [...enemy3.right],
+  });
+  allSnails.forEach((element) => {
+    element.loadImages();
+  });
+}
+
+function createHealthBar() {
+  for (let i = 0; i <= 12; i++) {
+    healthBar.push(
+      new Sprite(850, 20, 517 / 2, 175 / 2, `images/health${i}.png`)
+    );
+    healthBar[i].loadImage();
   }
 }
-loadNumbers();
 
-let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
-scoreBoard.loadImage();
+function drawHealthBar() {
+  healthBar[player1.health].x = 850 - globalX;
+  healthBar[player1.health].y = 20 - globalY;
+  healthBar[player1.health].draw();
 
-let cloud1 = new Sprite(30, 100, 128, 71, "images/cloud1.png");
-cloud1.loadImage();
+  toolBoard.x = 400 - globalX;
+  toolBoard.y = 10 - globalY;
+  toolBoard.draw();
+}
+
+function moveEnemies() {
+  for (let i = 0; i < allFlies.length; i++) {
+    if (allFlies[i].direction === "right") {
+      allFlies[i].x++;
+      allFlies[i].sideCount++;
+      if (allFlies[i].sideCount === 100) allFlies[i].direction = "left";
+    }
+
+    if (allFlies[i].direction === "left") {
+      allFlies[i].x--;
+      allFlies[i].sideCount--;
+      if (allFlies[i].sideCount === 0) allFlies[i].direction = "right";
+    }
+  }
+
+  for (let i = 0; i < allSlimes.length; i++) {
+    if (allSlimes[i].direction === "right") {
+      allSlimes[i].x++;
+      allSlimes[i].sideCount++;
+      if (allSlimes[i].sideCount === 100) allSlimes[i].direction = "left";
+    }
+
+    if (allSlimes[i].direction === "left") {
+      allSlimes[i].x--;
+      allSlimes[i].sideCount--;
+      if (allSlimes[i].sideCount === 0) allSlimes[i].direction = "right";
+    }
+  }
+
+  for (let i = 0; i < allSnails.length; i++) {
+    if (allSnails[i].direction === "right") {
+      allSnails[i].x++;
+      allSnails[i].sideCount++;
+      if (allSnails[i].sideCount === 100) allSnails[i].direction = "left";
+    }
+
+    if (allSnails[i].direction === "left") {
+      allSnails[i].x--;
+      allSnails[i].sideCount--;
+      if (allSnails[i].sideCount === 0) allSnails[i].direction = "right";
+    }
+  }
+
+  for (let i = 0; i < allFireBalls.length; i++) {
+    allFireBalls[i].y = allFireBalls[i].y + 4;
+    allFireBalls[i].sideCount++;
+    if (allFireBalls[i].sideCount > 200) {
+      allFireBalls[i].y = 700;
+      allFireBalls[i].sideCount = 0;
+    }
+    // if (allSnails[i].sideCount === 100) allSnails[i].direction = "left";
+  }
+}
+let globalRotate = 0;
+function drawEnemies() {
+  for (let i = 0; i < allFlies.length; i++) {
+    allFlies[i].draw();
+  }
+
+  // for (let i = 0; i < allSlimes.length; i++) {
+  //   allSlimes[i].draw();
+  // }
+
+  for (let i = 0; i < allSnails.length; i++) {
+    allSnails[i].draw();
+  }
+}
 
 function displayScore(total) {
   let scorePos = 0;
@@ -257,6 +882,7 @@ function displayScore(total) {
     scorePos = 175 - totalArr.length * 15;
   }
   scoreBoard.x = 80 - globalX;
+  scoreBoard.y = 10 - globalY;
   scoreBoard.draw();
   totalArr.forEach((element) => {
     score[Number(element)].x = scorePos - globalX;
@@ -266,64 +892,40 @@ function displayScore(total) {
   });
 }
 
-let tempGlobal = 0;
-let tempx = 0;
-canvas.addEventListener("mousedown", function (event) {
-  dragStart = {
-    mousex: event.pageX - canvas.offsetLeft,
-    mousey: event.pageY - canvas.offsetTop,
-  };
-  dragEnd = {
-    mousex: event.pageX - canvas.offsetLeft,
-    mousey: event.pageY - canvas.offsetTop,
-  };
-  tempx = mousex;
-  tempGlobal = globalX;
-  drag = true;
-});
-
-canvas.addEventListener("mouseup", function (event) {
-  if (dragStart.mousex != dragEnd.mousex) {
-    drag = true;
-  } else {
-    drag = false;
+function runAnimatedBlock(block) {
+  if (block.code === "coinGold") {
+    animatedCoin.draw(block.x, block.y);
   }
-  if (!drag)
-    if (customLandCode) {
-      images[Math.floor(dragStart.mousey / 70)][
-        Math.floor((dragStart.mousex - globalX) / 70)
-      ].image = customLandImage;
-      images[Math.floor(dragStart.mousey / 70)][
-        Math.floor((dragStart.mousex - globalX) / 70)
-      ].mass = customLandMass;
-      images[Math.floor(dragStart.mousey / 70)][
-        Math.floor((dragStart.mousex - globalX) / 70)
-      ].code = customLandCode;
-      images[Math.floor(dragStart.mousey / 70)][
-        Math.floor((dragStart.mousex - globalX) / 70)
-      ].value = customLandValue;
-      images[Math.floor(dragStart.mousey / 70)][
-        Math.floor((dragStart.mousex - globalX) / 70)
-      ].loadImage();
+}
 
-      for (i = 0; i < images.length; i++)
-        for (j = 0; j < images[i].length; j++) {
-          exportGrid[i][j] = images[i][j].code;
-        }
+function addTool() {
+  toolsEarned.innerHTML = "";
+  if (player1.score > 10) {
+    if (!addedSpring) {
+      setTimeout(() => {
+        pause = true;
+        newTool.showDialog();
+        addedSpring = true;
+      }, 500);
     }
-  drag = false;
-});
 
-canvas.addEventListener("mousemove", function (event) {
-  if (drag) {
-    dragEnd = {
-      mousex: event.pageX - canvas.offsetLeft,
-      mousey: event.pageY - canvas.offsetTop,
-    };
-    ctx.translate(dragEnd.x - dragStart.x, dragEnd.y - dragStart.y);
-    globalX = tempGlobal + dragEnd.mousex - dragStart.mousex;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
+    pickHTML = document.querySelectorAll(".pickhtml");
+    attachListeners();
   }
-});
+  if (player1.score > 20) {
+    if (!addedBox) {
+      setTimeout(() => {
+        pause = true;
+        newTool.showDialog();
+        addedBox = true;
+      }, 500);
+    }
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
+    pickHTML = document.querySelectorAll(".pickhtml");
+    attachListeners();
+  }
+}
 
 function injectHtml() {
   let builder = document.querySelector(".builder");
@@ -331,7 +933,7 @@ function injectHtml() {
   htmlBuilder.forEach((element) => {
     builder.innerHTML += `<img class="pickhtml" display="block" src="${element.image}" alt="" data-mass="${element.mass}" data-code="${element.code}" data-value="${element.value}"></img>`;
   });
-  builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
+  //  builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
 }
 
 function attachListeners() {
@@ -343,16 +945,150 @@ function attachListeners() {
       customLandValue = element.dataset.value;
 
       pickHTML.forEach((item) => {
-        item.style = ` border: 3px solid white;`;
+        item.style = ` border: 2px solid white;`;
       });
 
-      element.style = ` border: 3px solid red;`;
+      element.style = ` border: 2px solid blue;`;
     });
+  });
+
+  // downloadTxt.addEventListener("click", function (event) {
+  //   let stringExport = JSON.stringify(exportGrid);
+  //   stringExport = stringExport.replace(/\"/g, " ");
+  //   download("json.txt", stringExport);
+  // });
+
+  canvas.addEventListener("mousedown", function (event) {
+    //requestAnimationFrame(updateCanvas);
+    dragStart = {
+      mousex: event.pageX - canvas.offsetLeft,
+      mousey: event.pageY - canvas.offsetTop,
+    };
+    dragEnd = {
+      mousex: event.pageX - canvas.offsetLeft,
+      mousey: event.pageY - canvas.offsetTop,
+    };
+    tempx = mousex;
+    tempGlobalX = globalX;
+    tempGlobalY = globalY;
+    drag = true;
+  });
+
+  canvas.addEventListener("mouseup", function (event) {
+    if (dragStart.mousex != dragEnd.mousex) {
+      drag = true;
+    } else {
+      drag = false;
+    }
+    if (!drag)
+      if (customLandCode && !pause) {
+        images[Math.floor((dragStart.mousey - globalY) / 70)][
+          Math.floor((dragStart.mousex - globalX) / 70)
+        ].image = customLandImage;
+        images[Math.floor((dragStart.mousey - globalY) / 70)][
+          Math.floor((dragStart.mousex - globalX) / 70)
+        ].mass = customLandMass;
+        images[Math.floor((dragStart.mousey - globalY) / 70)][
+          Math.floor((dragStart.mousex - globalX) / 70)
+        ].code = customLandCode;
+        images[Math.floor((dragStart.mousey - globalY) / 70)][
+          Math.floor((dragStart.mousex - globalX) / 70)
+        ].value = customLandValue;
+        images[Math.floor((dragStart.mousey - globalY) / 70)][
+          Math.floor((dragStart.mousex - globalX) / 70)
+        ].loadImage();
+
+        for (i = 0; i < images.length; i++)
+          for (j = 0; j < images[i].length; j++) {
+            exportGrid[i][j] = images[i][j].code;
+          }
+      }
+    drag = false;
+    if (pause) {
+      if (pause && player1.health === 0) {
+        location.reload();
+      } else {
+        setTimeout(() => {
+          pause = false;
+          customLandMass = "";
+          customLandCode = "";
+          customLandImage = "";
+          customLandValue = "";
+        }, 100);
+      }
+    }
+  });
+
+  canvas.addEventListener("mousemove", function (event) {
+    if (drag) {
+      dragEnd = {
+        mousex: event.pageX - canvas.offsetLeft,
+        mousey: event.pageY - canvas.offsetTop,
+      };
+      // ctx.translate(dragEnd.x - dragStart.x, dragEnd.y - dragStart.y);
+      let newX = tempGlobalX + dragEnd.mousex - dragStart.mousex;
+      if (newX <= 0 && newX >= -10630) globalX = newX;
+      globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    // if (player1.canGetDamage) {
+    player1.moving(e);
+    if (superPower) player1.allowedToJump = true;
+    if (e.keyCode === 38 && player1.allowedToJump) {
+      player1.jumping = true;
+      player1.allowedToJump = false;
+      if (movingCount > 25) {
+        player1.accelerateDown = globalGravity;
+        player1.accelerateUp = globalJumpSpeed - 5;
+      } else {
+        player1.accelerateDown = globalGravity;
+        player1.accelerateUp = globalJumpSpeed;
+      }
+    }
+    // }
+  });
+
+  document.addEventListener("keyup", (e) => {
+    if (e.keyCode === 37 || e.keyCode === 39) {
+      player1.stop();
+      movingLandStop();
+      trueDirection = "";
+    }
   });
 }
 
+function loadNumbers() {
+  for (i = 0; i < 10; i++) {
+    score.push(new Score(10 + i * 30, 10, 30, 38, `images/hud_${i}.png`));
+    score[i].loadImage();
+  }
+}
+player1.draw();
 function buildLand(land) {
-  images = [[], [], [], [], [], [], [], [], [], []];
+  images = [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+  ];
   for (i = 0; i < land.length; i++) {
     for (j = 0; j < land[i].length; j++) {
       images[i].push(
@@ -364,36 +1100,14 @@ function buildLand(land) {
           land[i][j].image,
           land[i][j].mass,
           land[i][j].code,
-          land[i][j].value
+          land[i][j].value,
+          land[i][j].animated
         )
       );
       images[i][j].loadImage();
     }
   }
 }
-buildLand(land1);
-
-let player1 = new Player(300, 120, 72, 97, player, 0);
-
-player1.loadImage();
-
-document.addEventListener("keydown", (e) => {
-  player1.moving(e);
-  if (e.keyCode === 38 && player1.allowedToJump) {
-    player1.jumping = true;
-    player1.allowedToJump = false;
-    player1.accelerateDown = globalGravity;
-    player1.accelerateUp = globalJumpSpeed;
-  }
-});
-
-document.addEventListener("keyup", (e) => {
-  if (e.keyCode === 37 || e.keyCode === 39) {
-    player1.stop();
-    movingLandStop();
-    trueDirection = "";
-  }
-});
 
 function download(filename, text) {
   var element = document.createElement("a");
@@ -429,6 +1143,12 @@ function moveLand(player1SpeedDirection) {
 }
 
 function checkCollision() {
+  let playerCenterX = Math.floor((player1.x + player1.width / 2) / 70);
+  let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
+  if (images[playerCenterY][playerCenterX].mass === "death") {
+    player1.health = 0;
+    drawHealthBar();
+  }
   // THIS CHECKS COLLISION WHILE MOVING RIGHT
   if (player1.direction === "right")
     if (
@@ -447,7 +1167,7 @@ function checkCollision() {
     }
 
   // THIS CHECKS COLLISION WHILE MOVING LEFT
-  if (player1.direction === "left")
+  if (player1.direction === "left") {
     if (
       images[Math.floor(player1.y / 70)][Math.floor((player1.x - 5) / 70)]
         .mass === "solid" ||
@@ -461,7 +1181,11 @@ function checkCollision() {
       player1.stop();
       movingLandStop();
     }
-
+    if (player1.x < 20) {
+      player1.stop();
+      movingLandStop();
+    }
+  }
   // THIS CHECKS COLLISIONS WHILE JUMPING
   if (player1.jumping) {
     if (
@@ -488,16 +1212,34 @@ function checkCollision() {
       movingLandStop();
     }
 
-    // THIS CHECKS COLLISION WHILE JUMPING FOR THE HEAD
+    //SUCCION TEST
     if (
-      images[Math.floor((player1.y - 10) / 70)][
+      images[Math.floor(player1.y / 70)][
         // THE 5 HERE IS CUSHION FOR PLAYER
-        Math.floor((player1.x + 10) / 70)
-      ].mass === "solid" ||
-      images[Math.floor((player1.y - 10) / 70)][
-        // THE 5 HERE IS CUSHION FOR PLAYER
+        Math.floor((player1.x + 5) / 70)
+      ].mass === "suck" ||
+      images[Math.floor((player1.y + player1.height) / 70)][
         Math.floor((player1.x + player1.width - 5) / 70)
-      ].mass === "solid"
+      ].mass === "suck"
+    ) {
+      player1.jumping = true;
+      player1.allowedToJump = false;
+      player1.accelerateUp = -1;
+      player1.accelerateDown = -globalGravity;
+      player1.allowedToJump = true;
+
+      movingLandStop();
+    }
+
+    // THIS CHECKS COLLISION WHILE JUMPING FOR THE HEAD
+    let jumpingXoption1 = Math.floor((player1.x + 10) / 70);
+    // THE 5 HERE IS CUSHION FOR PLAYER
+
+    let jumpingXoption2 = Math.floor((player1.x + player1.width - 5) / 70);
+    let jumpingY = Math.floor((player1.y - 10) / 70);
+    if (
+      images[jumpingY][jumpingXoption1].mass === "solid" ||
+      images[jumpingY][jumpingXoption2].mass === "solid"
     ) {
       player1.jumping = false;
       player1.allowedToJump = false;
@@ -506,6 +1248,57 @@ function checkCollision() {
       player1.allowedToJump = false;
       player1.y += 5;
       movingLandStop();
+      // UNTOUCHED COIN BOXES
+      if (images[jumpingY][jumpingXoption1].code === "boxCoin") {
+        player1.score += images[jumpingY][jumpingXoption1].value;
+        images[jumpingY][jumpingXoption1].value = 0;
+        addTool();
+        // ANIMATION OF COIN OUT OF BOX
+        pushCoin.x = jumpingXoption1 * 70;
+        pushCoin.y = (jumpingY - 1) * 70;
+        pushCoin.pushCoinCounter = 1;
+        //////////////////////////////////////
+        images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
+        images[jumpingY][jumpingXoption1].accelerateUp = -13;
+        images[jumpingY][jumpingXoption1].accelerateDown = 3;
+        setTimeout(() => {
+          images[jumpingY][jumpingXoption1].image =
+            "images/level1/boxCoin_disabled.png";
+          images[jumpingY][jumpingXoption1].code = "boxCoin_disabled";
+          images[jumpingY][jumpingXoption1].loadImage();
+          images[jumpingY][jumpingXoption1].bounceTarget = 0;
+        }, 200);
+      } else if (images[jumpingY][jumpingXoption2].code === "boxCoin") {
+        player1.score += images[jumpingY][jumpingXoption2].value;
+        images[jumpingY][jumpingXoption2].value = 0;
+
+        addTool();
+        // ANIMATION OF COIN OUT OF BOX
+        pushCoin.x = jumpingXoption2 * 70;
+        pushCoin.y = (jumpingY - 1) * 70;
+        pushCoin.pushCoinCounter = 1;
+        //////////////////////////////////////
+        images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
+        images[jumpingY][jumpingXoption2].accelerateUp = -13;
+        images[jumpingY][jumpingXoption2].accelerateDown = 3;
+        setTimeout(() => {
+          images[jumpingY][jumpingXoption2].image =
+            "images/level1/boxCoin_disabled.png";
+          images[jumpingY][jumpingXoption2].code = "boxCoin_disabled";
+          images[jumpingY][jumpingXoption2].loadImage();
+          images[jumpingY][jumpingXoption2].bounceTarget = 0;
+        }, 200);
+      }
+    }
+    // USED COIN BOXES
+    if (images[jumpingY][jumpingXoption1].code === "boxCoin_disabled") {
+      images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
+      images[jumpingY][jumpingXoption1].accelerateUp = -10;
+      images[jumpingY][jumpingXoption1].accelerateDown = 4;
+    } else if (images[jumpingY][jumpingXoption2].code === "boxCoin_disabled") {
+      images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
+      images[jumpingY][jumpingXoption2].accelerateUp = -10;
+      images[jumpingY][jumpingXoption2].accelerateDown = 4;
     }
 
     //SPRING ACTION
@@ -557,18 +1350,24 @@ function checkCollision() {
     player1.accelerateDown = globalGravity;
   }
 }
+
 function grabObject(y, x) {
   images[y][x].image = "images/air.png";
   images[y][x].code = "lvl1blk7";
   images[y][x].mass = "air";
   images[y][x].loadImage();
   player1.score += +images[y][x].value;
+  addTool();
 }
 
 function checkObjects() {
   let coordY = Math.floor((player1.y + player1.height) / 70);
   let coordX = Math.floor((player1.x + player1.width / 2) / 70);
-  if (images[coordY][coordX].mass === "item") grabObject(coordY, coordX);
+  if (images[coordY][coordX].mass === "item") {
+    if (images[coordY][coordX].code === "heartHealth")
+      if (player1.health < 12) player1.health++;
+    grabObject(coordY, coordX);
+  }
 }
 
 function movingLandStop() {
@@ -587,31 +1386,86 @@ function spring(a, b) {
     images[a][b].loadImage();
   }, 300);
 }
+
 function drawClouds() {
   let randomY = 0;
+  let randomCloud = 0;
+
   // BIGGER CLOUDS
   for (i = 0; i < 40; i++) {
     if (randomY === 200) randomY = 0;
-    cloud1.width = 128;
-    cloud1.height = 71;
-    cloud1.y = 100 + randomY;
-    cloud1.x = i * 700 - globalX / 3;
-    cloud1.draw();
+    if (randomCloud === 3) randomCloud = 0;
+    clouds[randomCloud].width = 128;
+    clouds[randomCloud].height = 71;
+    clouds[randomCloud].y = 100 + randomY;
+    clouds[randomCloud].x = i * 700 - globalX / 3;
+    clouds[randomCloud].draw();
     randomY += 40;
+    randomCloud++;
   }
   // SMALLER CLOUDS
   randomY = 0;
+  randomCloud = 0;
   for (i = 0; i < 40; i++) {
     if (randomY === 100) randomY = 0;
-    cloud1.x = i * 400 - globalX / 2;
-    cloud1.width = 64;
-    cloud1.height = 35;
-    cloud1.y = 300 + randomY;
-    cloud1.draw();
-    randomY += 10;
+    if (randomCloud === 3) randomCloud = 0;
+    clouds[randomCloud].x = i * 400 - globalX / 2;
+    clouds[randomCloud].width = 64;
+    clouds[randomCloud].height = 35;
+    clouds[randomCloud].y = 300 + randomY;
+    clouds[randomCloud].draw();
+    randomCloud++;
   }
 }
-function updateCanvas() {
+
+function drawBackground() {
+  ctx.globalAlpha = 0.1;
+
+  grassBackground.x = 0;
+  for (i = 0; i < 5; i++) {
+    grassBackground.x = i * 700 - globalX + globalX / 2;
+    grassBackground.draw();
+  }
+
+  iceBackground.x = 0;
+  for (i = 5; i < 10; i++) {
+    iceBackground.x = i * 700 - globalX + globalX / 2;
+
+    iceBackground.draw();
+  }
+  ctx.globalAlpha = 0.2;
+
+  caveBackground.x = 0;
+  caveBackground.y = 700;
+
+  for (i = 0; i < 10; i++) {
+    caveBackground.x = i * 700 - globalX + globalX / 2;
+
+    caveBackground.draw();
+  }
+
+  ctx.globalAlpha = 1;
+}
+// player1.x = 4340;
+// player1.y = 1162;
+// globalY = 700;
+// globalx = -10000;
+// moveLand();
+function clearAndDraw() {
+  if (
+    player1.y > 475 &&
+    !level2Arrived &&
+    player1.x > 11340 &&
+    player1.health > 0
+  ) {
+    globalY = -(player1.y - 475);
+  }
+  if (player1.y >= 1162 && player1.health > 0) {
+    globalY = -700;
+    level2Arrived = true;
+    canvas.style = `background-color: rgb(77, 48, 6);`;
+  }
+
   // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS
   if (trueDirection === "right") {
     player1.moving({ keyCode: 39 });
@@ -620,27 +1474,136 @@ function updateCanvas() {
   if (trueDirection === "left") {
     player1.moving({ keyCode: 37 });
   }
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
   drawClouds();
-
+  for (let i = 0; i < allFireBalls.length; i++) {
+    allFireBalls[i].draw();
+  }
+  // THIS DRAWS ENTIRE LAND
+  globalCoinStep++;
   for (i = 0; i < images.length; i++) {
     for (j = 0; j < images[i].length; j++) {
-      images[i][j].draw();
+      if (images[i][j].animated) {
+        runAnimatedBlock(images[i][j]);
+      } else {
+        images[i][j].bounce();
+        images[i][j].draw();
+      }
     }
   }
   // ORDER HERE MATTERS
-  checkCollision();
-  checkObjects();
+  if (player1.y <= 15) {
+    player1.jumping = false;
+    player1.allowedToJump = false;
+    player1.accelerateUp = 0;
+    player1.accelerateDown = globalGravity + 0.2;
+    player1.allowedToJump = false;
+    player1.y += 5;
+  }
 
+  if (player1.y >= 25 && player1.health > 0) {
+    checkCollision();
+    checkEnemyCollision();
+    checkObjects();
+  }
+  moveEnemies();
   player1.move();
+  pushCoin.draw();
+  drawEnemies();
   player1.Jump();
   globalX += globalSpeed;
   moveLand(player1.speed);
   player1.draw();
   displayScore(player1.score);
 
-  requestAnimationFrame(updateCanvas);
+  drawHealthBar();
 }
 
+function checkEnemyCollision() {
+  let cushion = 10;
+  //CHECK COLLISION WITH FLIES
+  allFlies.forEach((element) => {
+    if (
+      player1.x + cushion < element.x + element.width &&
+      player1.x + player1.width - cushion > element.x &&
+      player1.y + cushion < element.y + element.height &&
+      player1.y + player1.height - cushion > element.y &&
+      player1.canGetDamage
+    ) {
+      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+        player1.hurt("right");
+      } else {
+        player1.hurt("left");
+      }
+    }
+  });
+  cushion = 15;
+
+  allSlimes.forEach((element) => {
+    if (
+      player1.x + cushion < element.x + element.width &&
+      player1.x + player1.width - cushion > element.x &&
+      player1.y + cushion < element.y + element.height &&
+      player1.y + player1.height - cushion > element.y &&
+      player1.canGetDamage
+    ) {
+      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+        player1.hurt("right");
+      } else {
+        player1.hurt("left");
+      }
+    }
+  });
+
+  cushion = 15;
+
+  allSnails.forEach((element) => {
+    if (
+      player1.x + cushion < element.x + element.width &&
+      player1.x + player1.width - cushion > element.x &&
+      player1.y + cushion < element.y + element.height &&
+      player1.y + player1.height - cushion > element.y &&
+      player1.canGetDamage
+    ) {
+      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+        player1.hurt("right");
+      } else {
+        player1.hurt("left");
+      }
+    }
+  });
+
+  cushion = 15;
+
+  allFireBalls.forEach((element) => {
+    if (
+      player1.x + cushion < element.x + element.width &&
+      player1.x + player1.width - cushion > element.x &&
+      player1.y + cushion < element.y + element.height &&
+      player1.y + player1.height - cushion > element.y &&
+      player1.canGetDamage
+    ) {
+      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+        player1.hurt("right");
+      } else {
+        player1.hurt("left");
+      }
+    }
+  });
+}
+
+function updateCanvas() {
+  if (!pause) {
+    clearAndDraw();
+  }
+  if (player1.health > 0) {
+    requestAnimationFrame(updateCanvas);
+  }
+  if (player1.health === 0) {
+    pause = true;
+    gameOver.showDialog();
+  }
+}
+//ctx.scale(0.5, 0.5);
 updateCanvas();

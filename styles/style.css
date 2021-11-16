@@ -3,12 +3,32 @@ body {
 }
 
 .game-board {
-  display: flex;
+  display: table;
+  margin: auto;
+}
+
+#canvas {
+  -webkit-box-shadow: 0 0 20px rgb(75, 189, 255);
+  -moz-box-shadow: 0 0 20px rgb(75, 189, 255);
+  box-shadow: 0 0 20px rgb(75, 189, 255);
+  border: 2px solid rgb(0, 0, 0);
 }
 
 .pickhtml {
-  border: 3px solid white;
+  border: 2px solid white;
+  background-color: white;
+  padding: 3px;
+  border-radius: 13px;
+  width: 60px;
+  height: 60px;
+  margin: 2px;
 }
 .side-panel {
   display: flex;
+}
+
+.toolsEarned {
+  position: absolute;
+  margin-left: 426px;
+  margin-top: 41px;
 }
