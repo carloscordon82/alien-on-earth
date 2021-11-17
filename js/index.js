@@ -1463,7 +1463,12 @@ function clearAndDraw() {
   if (player1.y >= 1162 && player1.health > 0) {
     globalY = -700;
     level2Arrived = true;
-    canvas.style = `background-color: rgb(77, 48, 6);`;
+    canvas.style = `background-color: rgb(77, 48, 6);
+    cursor: pointer;
+    -webkit-transition: background-color 4s ease-out;
+    -moz-transition: background-color 4s ease-out;
+    -o-transition: background-color 4s ease-out;
+    transition: background-color 4s ease-out;`;
   }
 
   // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS
