@@ -1865,8 +1865,8 @@ function updateCanvas() {
   // ctx.globalAlpha = 0.5;
   // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
-let nplayer = document.querySelector("audio");
-nplayer.pause();
+// let nplayer = document.querySelector("audio");
+// nplayer.pause();
 // setTimeout(() => {
 //   nplayer.play();
 // }, 10000);
