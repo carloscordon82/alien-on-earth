@@ -1,10 +1,15 @@
 body {
   padding: 0;
+  background-image: url("../images/level1/grassBackground.png");
+  background-color: rgba(255, 255, 255, 0.7);
+  background-blend-mode: lighten;
+  background-position: center;
 }
 
 .game-board {
   display: table;
   margin: auto;
+  margin-top: 20px;
 }
 
 #canvas {
@@ -29,6 +34,16 @@ body {
 
 .toolsEarned {
   position: absolute;
-  margin-left: 426px;
+  margin-left: 435px;
   margin-top: 41px;
+}
+
+#carouselExampleIndicators {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  display: none;
 }

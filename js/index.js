@@ -37,13 +37,6 @@ class Dialog extends Sprite {
   }
 
   showDialog() {
-    // for (i = 0; i <= 650; i++) {
-    //   this.height = (i * 237) / 650;
-    //   this.width = i;
-    //   this.x = ctx.canvas.width / 2 - this.width / 2;
-    //   this.y = ctx.canvas.height / 2 - this.height / 2;
-    //   this.draw();
-    // }
     setTimeout(() => {
       ctx.fillStyle = "#e0d1af";
       ctx.globalAlpha = 0.9;
@@ -54,6 +47,18 @@ class Dialog extends Sprite {
       this.y = ctx.canvas.height / 2 - this.height / 2;
       this.draw();
     }, 10);
+  }
+}
+class startDialog extends Sprite {
+  constructor(x, y, width, height, image) {
+    super(x, y, width, height, image);
+  }
+
+  draw() {
+    this.x = ctx.canvas.width / 2 - this.width / 2;
+    this.y = ctx.canvas.height / 2 - this.height / 2;
+
+    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
   }
 }
 
@@ -90,6 +95,8 @@ class Block extends Sprite {
       this.accelerateUp += this.accelerateDown;
       pushCoin.y += this.accelerateUp;
       if (this.y >= this.bounceTarget) {
+        this.accelerateUp = 0;
+        this.accelerateDown = 0;
         this.y = this.bounceTarget;
         this.bounceTarget = 0;
       }
@@ -227,6 +234,8 @@ class Player extends Sprite {
   }
 
   draw() {
+    console.log(this.jumping, this.direction);
+
     if (!this.hurting) {
       if (this.direction === "right")
         if (!this.jumping) {
@@ -281,27 +290,47 @@ class Player extends Sprite {
           );
           this.foundDrawing = true;
         }
-      if (this.direction === "stopped_left") {
-        ctx.drawImage(
-          this.imageGroup.stopped_left,
-          this.x + globalX,
-          this.y + globalY,
-          this.width,
-          this.height
-        );
-        this.foundDrawing = true;
-      }
+      if (this.direction === "stopped_left")
+        if (!this.jumping) {
+          ctx.drawImage(
+            this.imageGroup.stopped_left,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        } else {
+          ctx.drawImage(
+            this.imageGroup.jumping_left,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        }
 
-      if (this.direction === "stopped_right") {
-        ctx.drawImage(
-          this.imageGroup.stopped_right,
-          this.x + globalX,
-          this.y + globalY,
-          this.width,
-          this.height
-        );
-        this.foundDrawing = true;
-      }
+      if (this.direction === "stopped_right")
+        if (!this.jumping) {
+          ctx.drawImage(
+            this.imageGroup.stopped_right,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        } else {
+          ctx.drawImage(
+            this.imageGroup.jumping_right,
+            this.x + globalX,
+            this.y + globalY,
+            this.width,
+            this.height
+          );
+          this.foundDrawing = true;
+        }
     } else {
       if (this.direction === "hurt_right") {
         ctx.drawImage(
@@ -458,7 +487,7 @@ class Player extends Sprite {
     if (hitDirection === "left") {
       this.hurting = true;
       this.direction = "hurt_left";
-      this.accelerateUp = -10;
+      this.accelerateUp = -15;
       this.accelerateDown = 1;
       let hurtLeft = setInterval(() => {
         this.movingHit({ keyCode: 37 });
@@ -471,7 +500,7 @@ class Player extends Sprite {
     if (hitDirection === "right") {
       this.hurting = true;
       this.direction = "hurt_right";
-      this.accelerateUp = -10;
+      this.accelerateUp = -15;
       this.accelerateDown = 1;
       let hurtRight = setInterval(() => {
         this.movingHit({ keyCode: 39 });
@@ -503,6 +532,7 @@ class Player extends Sprite {
 
 let globalX = 0;
 let globalY = 0;
+let start = true;
 let globalCoinStep = 0;
 let globalSpeed = 0;
 let trueDirection = "";
@@ -519,6 +549,11 @@ let level3Arrived = false;
 let level4Arrived = false;
 let movingCount = 0;
 let superPower = false;
+
+//JETPACK IDEA
+// let superPower = false;
+// let globalGravity = 0.2;
+// let globalJumpSpeed = -5;
 
 let images = [
   [],
@@ -564,12 +599,18 @@ let exportGrid = [
   [],
   [],
 ];
+let win = false;
+let bigCounter = 0;
+let bigCounterUP = -1;
+let bigCounterDOWN = 0.1;
 let customLandImage = "";
 let customLandMass = "";
 let customLandCode = "";
 let customLandValue = 0;
 let addedSpring = false;
 let addedBox = false;
+let addedEraser = false;
+let addedJetpack = false;
 let score = [];
 let tempGlobalX = 0;
 let tempGlobalY = 0;
@@ -599,17 +640,26 @@ let pushCoin = new AnimatedBlock(5200, 200, 70, 70, pushCoinSprite, "once");
 let toolBoard = new Sprite(400, 10, 650 / 2, 237 / 2, "images/toolBoard.png");
 let newTool = new Dialog(200, 200, 650, 261, "images/newTool.png");
 let gameOver = new Dialog(200, 200, 650, 261, "images/gameOver.png");
+let youWin = new Dialog(200, 200, 650, 261, "images/youWin.png");
+let startScreen = new startDialog(200, 200, 650, 261, "images/intro.png");
 
 toolBoard.loadImage();
 pushCoin.loadImages();
 animatedCoin.loadImages();
 newTool.loadImage();
 gameOver.loadImage();
+youWin.loadImage();
+startScreen.loadImage();
 let player1 = new Player(300, 120, 72, 97, player, 0);
+let player1Jet = new Player(300, 120, 72, 97, playerJet, 0);
 let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
 clouds[0] = new Sprite(30, 100, 128, 71, "images/cloud1.png");
 clouds[1] = new Sprite(30, 100, 128, 71, "images/cloud2.png");
 clouds[2] = new Sprite(30, 100, 128, 71, "images/cloud3.png");
+
+let finalCoin = new AnimatedBlock(5100, 100, 270, 270, finalCoins, "loop");
+finalCoin.loadImages();
+
 let grassBackground = new Sprite(
   0,
   0,
@@ -635,6 +685,7 @@ attachListeners();
 loadNumbers();
 buildLand(land1);
 player1.loadImage();
+player1Jet.loadImage();
 scoreBoard.loadImage();
 clouds[0].loadImage();
 clouds[1].loadImage();
@@ -647,6 +698,14 @@ function createFireBalls() {
       right: [...fireBall.right],
     });
     allFireBalls[i].sideCount = Math.floor(Math.random() * 100);
+  }
+
+  for (let i = allFireBalls.length; i < 40; i++) {
+    allFireBalls[i] = new Enemy(100 * i - 1500, 700, 75, 75, {
+      left: [...fireBall.left],
+      right: [...fireBall.right],
+    });
+    allFireBalls[i].sideCount = Math.floor(Math.random() * 200);
   }
 
   allFireBalls.forEach((element) => {
@@ -741,15 +800,49 @@ function createFlies() {
 }
 
 function createSlimes() {
-  // for (let i = 0; i < 20; i++) {
-  //   allSlimes.push(
-  //     new Enemy(50 + 700 * i, 400, 50, 28, {
-  //       left: [...enemy2.left],
-  //       right: [...enemy2.right],
-  //     })
-  //   );
-  //   allSlimes[i].loadImages();
-  // }
+  allSlimes[0] = new Enemy(11370, 1232, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[1] = new Enemy(9330, 1232, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[2] = new Enemy(6880, 1092, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[3] = new Enemy(6540, 1302, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[4] = new Enemy(5600, 11022, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[5] = new Enemy(4700, 1232, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[6] = new Enemy(4050, 1232, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes[7] = new Enemy(2440, 1092, 50, 28, {
+    left: [...enemy2.left],
+    right: [...enemy2.right],
+  });
+
+  allSlimes.forEach((element) => {
+    element.loadImages();
+  });
 }
 
 function createSnails() {
@@ -860,9 +953,9 @@ function drawEnemies() {
     allFlies[i].draw();
   }
 
-  // for (let i = 0; i < allSlimes.length; i++) {
-  //   allSlimes[i].draw();
-  // }
+  for (let i = 0; i < allSlimes.length; i++) {
+    allSlimes[i].draw();
+  }
 
   for (let i = 0; i < allSnails.length; i++) {
     allSnails[i].draw();
@@ -886,7 +979,7 @@ function displayScore(total) {
   scoreBoard.draw();
   totalArr.forEach((element) => {
     score[Number(element)].x = scorePos - globalX;
-    score[Number(element)].y = 50;
+    score[Number(element)].y = 50 - globalY;
     score[Number(element)].draw();
     scorePos += 40;
   });
@@ -900,28 +993,60 @@ function runAnimatedBlock(block) {
 
 function addTool() {
   toolsEarned.innerHTML = "";
-  if (player1.score > 10) {
+  if (player1.score >= 60) {
     if (!addedSpring) {
       setTimeout(() => {
         pause = true;
         newTool.showDialog();
         addedSpring = true;
-      }, 500);
+      }, 200);
     }
 
     toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
+    // log(toolsEarned.src);
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
-  if (player1.score > 20) {
+  if (player1.score >= 100) {
     if (!addedBox) {
+      disableIcon("spring");
+
       setTimeout(() => {
         pause = true;
         newTool.showDialog();
         addedBox = true;
-      }, 500);
+      }, 200);
     }
     toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
+    pickHTML = document.querySelectorAll(".pickhtml");
+    attachListeners();
+  }
+
+  if (player1.score > 160) {
+    if (!addedEraser) {
+      disableIcon("box");
+      setTimeout(() => {
+        pause = true;
+        newTool.showDialog();
+        addedEraser = true;
+      }, 200);
+    }
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
+    pickHTML = document.querySelectorAll(".pickhtml");
+    attachListeners();
+  }
+
+  if (player1.score > 175) {
+    disableIcon("eraser");
+
+    if (!addedJetpack) {
+      setTimeout(() => {
+        pause = true;
+        newTool.showDialog();
+        addedJetpack = true;
+      }, 200);
+    }
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack.png" alt="" data-mass="air" data-code="jetpack" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
@@ -933,15 +1058,18 @@ function injectHtml() {
   htmlBuilder.forEach((element) => {
     builder.innerHTML += `<img class="pickhtml" display="block" src="${element.image}" alt="" data-mass="${element.mass}" data-code="${element.code}" data-value="${element.value}"></img>`;
   });
-  //  builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
+  // builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
 }
 
 function attachListeners() {
   pickHTML.forEach((element) => {
+    element.style = ` border: 2px solid white;`;
     element.addEventListener("click", function (e) {
       customLandMass = element.dataset.mass;
       customLandCode = element.dataset.code;
+      // if (element.code === "lvl1blk7") {
       customLandImage = element.getAttribute("src");
+      // } else customLandImage = "images/air.png";
       customLandValue = element.dataset.value;
 
       pickHTML.forEach((item) => {
@@ -975,37 +1103,61 @@ function attachListeners() {
   });
 
   canvas.addEventListener("mouseup", function (event) {
+    if (start) {
+      start = false;
+      globalX = 0;
+      player1.y = 100;
+    }
     if (dragStart.mousex != dragEnd.mousex) {
       drag = true;
     } else {
       drag = false;
     }
     if (!drag)
-      if (customLandCode && !pause) {
-        images[Math.floor((dragStart.mousey - globalY) / 70)][
-          Math.floor((dragStart.mousex - globalX) / 70)
-        ].image = customLandImage;
-        images[Math.floor((dragStart.mousey - globalY) / 70)][
-          Math.floor((dragStart.mousex - globalX) / 70)
-        ].mass = customLandMass;
-        images[Math.floor((dragStart.mousey - globalY) / 70)][
-          Math.floor((dragStart.mousex - globalX) / 70)
-        ].code = customLandCode;
-        images[Math.floor((dragStart.mousey - globalY) / 70)][
-          Math.floor((dragStart.mousex - globalX) / 70)
-        ].value = customLandValue;
-        images[Math.floor((dragStart.mousey - globalY) / 70)][
-          Math.floor((dragStart.mousex - globalX) / 70)
-        ].loadImage();
-
-        for (i = 0; i < images.length; i++)
-          for (j = 0; j < images[i].length; j++) {
-            exportGrid[i][j] = images[i][j].code;
+      if (customLandCode && !pause)
+        if (customLandCode != "jetpack") {
+          if (customLandCode === "lvl1blk7") {
+            images[Math.floor((dragStart.mousey - globalY) / 70)][
+              Math.floor((dragStart.mousex - globalX) / 70)
+            ].image = `images/air.png`;
+          } else {
+            images[Math.floor((dragStart.mousey - globalY) / 70)][
+              Math.floor((dragStart.mousex - globalX) / 70)
+            ].image = customLandImage;
           }
-      }
+          images[Math.floor((dragStart.mousey - globalY) / 70)][
+            Math.floor((dragStart.mousex - globalX) / 70)
+          ].mass = customLandMass;
+          images[Math.floor((dragStart.mousey - globalY) / 70)][
+            Math.floor((dragStart.mousex - globalX) / 70)
+          ].code = customLandCode;
+          images[Math.floor((dragStart.mousey - globalY) / 70)][
+            Math.floor((dragStart.mousex - globalX) / 70)
+          ].value = customLandValue;
+          images[Math.floor((dragStart.mousey - globalY) / 70)][
+            Math.floor((dragStart.mousex - globalX) / 70)
+          ].loadImage();
+
+          for (i = 0; i < images.length; i++)
+            for (j = 0; j < images[i].length; j++) {
+              exportGrid[i][j] = images[i][j].code;
+            }
+        } else {
+          //JETPACK CODE
+          globalGravity = 0.2;
+          globalJumpSpeed = -5;
+          player1.imageGroup = player1Jet.imageGroup;
+          player1.width = 85;
+          player1.height = 97;
+          player1.x -= 13;
+          superPower = true;
+          disableIcon("jetpack");
+        }
     drag = false;
     if (pause) {
       if (pause && player1.health === 0) {
+        location.reload();
+      } else if (pause && win) {
         location.reload();
       } else {
         setTimeout(() => {
@@ -1033,6 +1185,18 @@ function attachListeners() {
   });
 
   document.addEventListener("keydown", (e) => {
+    // console.log(
+    //   "X:",
+    //   player1.x,
+    //   " Y:",
+    //   player1.y,
+    //   " Fly Y would be:",
+    //   player1.y + player1.height / 2 - allFlies[0].height,
+    //   " Snail Y would be:",
+    //   player1.y + player1.height - allSnails[0].height,
+    //   " Slime Y would be:",
+    //   player1.y + player1.height - allSlimes[0].height
+    // );
     // if (player1.canGetDamage) {
     player1.moving(e);
     if (superPower) player1.allowedToJump = true;
@@ -1047,7 +1211,7 @@ function attachListeners() {
         player1.accelerateUp = globalJumpSpeed;
       }
     }
-    // }
+    //}
   });
 
   document.addEventListener("keyup", (e) => {
@@ -1258,6 +1422,7 @@ function checkCollision() {
         pushCoin.y = (jumpingY - 1) * 70;
         pushCoin.pushCoinCounter = 1;
         //////////////////////////////////////
+
         images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
         images[jumpingY][jumpingXoption1].accelerateUp = -13;
         images[jumpingY][jumpingXoption1].accelerateDown = 3;
@@ -1267,7 +1432,7 @@ function checkCollision() {
           images[jumpingY][jumpingXoption1].code = "boxCoin_disabled";
           images[jumpingY][jumpingXoption1].loadImage();
           images[jumpingY][jumpingXoption1].bounceTarget = 0;
-        }, 200);
+        }, 300);
       } else if (images[jumpingY][jumpingXoption2].code === "boxCoin") {
         player1.score += images[jumpingY][jumpingXoption2].value;
         images[jumpingY][jumpingXoption2].value = 0;
@@ -1278,6 +1443,7 @@ function checkCollision() {
         pushCoin.y = (jumpingY - 1) * 70;
         pushCoin.pushCoinCounter = 1;
         //////////////////////////////////////
+
         images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
         images[jumpingY][jumpingXoption2].accelerateUp = -13;
         images[jumpingY][jumpingXoption2].accelerateDown = 3;
@@ -1287,7 +1453,7 @@ function checkCollision() {
           images[jumpingY][jumpingXoption2].code = "boxCoin_disabled";
           images[jumpingY][jumpingXoption2].loadImage();
           images[jumpingY][jumpingXoption2].bounceTarget = 0;
-        }, 200);
+        }, 300);
       }
     }
     // USED COIN BOXES
@@ -1366,8 +1532,62 @@ function checkObjects() {
   if (images[coordY][coordX].mass === "item") {
     if (images[coordY][coordX].code === "heartHealth")
       if (player1.health < 12) player1.health++;
+    if (images[coordY][coordX].code === "star") {
+      pause = true;
+      win = true;
+      youWin.showDialog();
+    }
     grabObject(coordY, coordX);
   }
+}
+
+function disableIcon(data) {
+  if (data === "jetpack") {
+    pickHTML.forEach((element) => {
+      if (element.getAttribute("data-code") === "jetpack") {
+        element.setAttribute("data-code", "");
+
+        element.setAttribute("src", "images/jetpack_used.png");
+      }
+    });
+  }
+
+  if (data === "spring") {
+    pickHTML.forEach((element) => {
+      if (element.getAttribute("data-code") === "springboardUp") {
+        element.setAttribute("data-code", "");
+
+        element.setAttribute("src", "images/level1/spring_used.png");
+      }
+    });
+  }
+
+  if (data === "eraser") {
+    pickHTML.forEach((element) => {
+      if (element.getAttribute("data-code") === "lvl1blk7") {
+        element.setAttribute("data-code", "");
+
+        element.setAttribute("src", "images/eraser_used.png");
+      }
+    });
+  }
+
+  if (data === "box") {
+    pickHTML.forEach((element) => {
+      if (element.getAttribute("data-code") === "boxItem_disabled") {
+        element.setAttribute("data-code", "");
+
+        element.setAttribute("src", "images/level1/boxItem_disabled_used.png");
+      }
+    });
+  }
+
+  customLandMass = "";
+  customLandCode = "";
+  customLandImage = "";
+  customLandValue = "";
+  injectHtml();
+  attachListeners();
 }
 
 function movingLandStop() {
@@ -1446,8 +1666,9 @@ function drawBackground() {
 
   ctx.globalAlpha = 1;
 }
-// player1.x = 4340;
+// player1.x = 340;
 // player1.y = 1162;
+// start = false;
 // globalY = 700;
 // globalx = -10000;
 // moveLand();
@@ -1519,10 +1740,41 @@ function clearAndDraw() {
   player1.Jump();
   globalX += globalSpeed;
   moveLand(player1.speed);
-  player1.draw();
-  displayScore(player1.score);
+  showBigStar();
+  if (!start) {
+    player1.draw();
+    displayScore(player1.score);
+    drawHealthBar();
+  }
+  if (start) {
+    startScreen.draw();
 
-  drawHealthBar();
+    if (globalX < -10630) {
+      globalX = 0;
+    } else {
+      globalX -= 2;
+    }
+  }
+}
+
+function showBigStar() {
+  bigCounter += bigCounterUP;
+  bigCounterUP += bigCounterDOWN;
+  finalCoin.draw(50, 950 + bigCounter);
+  if (bigCounter > 1 || finalCoin.y < 900) {
+    bigCounterDOWN = -0.02;
+  }
+  if (bigCounter < 1 || finalCoin.y > 915) {
+    bigCounterDOWN = 0.02;
+  }
+  if (bigCounter > 45) {
+    bigCounterUP = 0;
+    bigCounter = 44;
+  }
+  if (bigCounter < -45) {
+    bigCounterUP = 0;
+    bigCounter = -44;
+  }
 }
 
 function checkEnemyCollision() {
@@ -1609,6 +1861,15 @@ function updateCanvas() {
     pause = true;
     gameOver.showDialog();
   }
+  // ctx.fillStyle = "white";
+  // ctx.globalAlpha = 0.5;
+  // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
+let nplayer = document.querySelector("audio");
+nplayer.pause();
+// setTimeout(() => {
+//   nplayer.play();
+// }, 10000);
+
 //ctx.scale(0.5, 0.5);
 updateCanvas();
