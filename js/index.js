@@ -569,6 +569,8 @@ let soundEffectSpring = new sound("music/soundEffectSpring.mp3");
 let soundEffectCoinBox = new sound("music/soundEffectCoinBox.mp3");
 let soundEffectCoinGrab = new sound("music/soundEffectCoinGrab.mp3");
 let soundEffectFalling = new sound("music/soundEffectFalling.mp3");
+let soundEffectHeart = new sound("music/soundEffectHeart.mp3");
+let soundEffectDead = new sound("music/soundEffectDead.mp3");
 
 //JETPACK IDEA
 // let superPower = false;
@@ -1025,7 +1027,7 @@ function runAnimatedBlock(block) {
 function addTool() {
   toolsEarned.innerHTML = "";
   //60
-  if (player1.score >= 1) {
+  if (player1.score >= 60) {
     if (!addedSpring) {
       setTimeout(() => {
         pause = true;
@@ -1070,7 +1072,7 @@ function addTool() {
     attachListeners();
   }
   //175
-  if (player1.score > 2) {
+  if (player1.score > 175) {
     disableIcon("eraser");
     eraserToolSufix = "_used";
     if (!addedJetpack) {
@@ -1367,6 +1369,10 @@ function checkCollision() {
   if (player1.y > 28) {
     let playerCenterX = Math.floor((player1.x + player1.width / 2) / 70);
     let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
+    console.log(
+      "checking before death",
+      images[playerCenterY][playerCenterX].mass
+    );
     if (images[playerCenterY][playerCenterX].mass === "death")
       if (!superman) {
         player1.health = 0;
@@ -1620,8 +1626,10 @@ function checkObjects() {
   let coordY = Math.floor((player1.y + player1.height) / 70);
   let coordX = Math.floor((player1.x + player1.width / 2) / 70);
   if (images[coordY][coordX].mass === "item") {
-    if (images[coordY][coordX].code === "heartHealth")
+    if (images[coordY][coordX].code === "heartHealth") {
+      soundEffectHeart.play();
       if (player1.health < 12) player1.health++;
+    }
     if (images[coordY][coordX].code === "star") {
       pause = true;
       win = true;
@@ -1973,6 +1981,9 @@ function updateCanvas() {
   if (player1.health === 0) {
     pause = true;
     gameOver.showDialog();
+    backgroundMusicLevel1.stop();
+    backgroundMusicLevel2.stop();
+    soundEffectDead.play();
   }
 
   if (player1.x > 11540 && player1.y > 462 + player1.height && !level2Music) {
