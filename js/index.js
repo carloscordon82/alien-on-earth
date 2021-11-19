@@ -1199,7 +1199,7 @@ function attachListeners() {
       // ctx.translate(dragEnd.x - dragStart.x, dragEnd.y - dragStart.y);
       let newX = tempGlobalX + dragEnd.mousex - dragStart.mousex;
       if (newX <= 0 && newX >= -10630) globalX = newX;
-      globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
+      //globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
     }
   });
 
