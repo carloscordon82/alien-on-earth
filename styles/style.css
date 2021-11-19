@@ -1,6 +1,7 @@
 body {
   padding: 0;
   background-image: url("../images/level1/grassBackground.png");
+  background-size: cover;
   background-color: rgba(255, 255, 255, 0.7);
   background-blend-mode: lighten;
   background-position: center;
@@ -10,6 +11,15 @@ body {
   display: table;
   margin: auto;
   margin-top: 20px;
+}
+
+.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 #canvas {

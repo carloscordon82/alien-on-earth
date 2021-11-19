@@ -403,13 +403,14 @@ class Player extends Sprite {
   }
 
   moving(e) {
-    movingCount++;
     if (e.keyCode === 37) {
+      movingCount++;
       this.direction = "left";
       trueDirection = "left";
       this.speed = -10;
     }
     if (e.keyCode === 39) {
+      movingCount++;
       this.direction = "right";
       trueDirection = "right";
       this.speed = 10;
@@ -418,6 +419,7 @@ class Player extends Sprite {
 
   movingHit(e) {
     movingCount++;
+    soundEffectHit.play();
     if (e.keyCode === 37) {
       this.direction = "hurt_left";
       // trueDirection = "left";
@@ -468,6 +470,7 @@ class Player extends Sprite {
   }
 
   stop() {
+    //soundEffectJump.stop();
     movingCount = 0;
     this.speed = 0;
     if (this.direction === "right") this.direction = "stopped_right";
@@ -475,9 +478,8 @@ class Player extends Sprite {
   }
 
   hurt(hitDirection) {
-    console.log(player1.imageGroup);
-    player1.imageGroup = playerH.imageGroup;
-    console.log(player1.imageGroup);
+    // player1.imageGroup = playerH.imageGroup;
+
     if (this.canGetDamage) {
       this.health -= 1;
       this.canGetDamage = false;
@@ -510,10 +512,14 @@ class Player extends Sprite {
         clearInterval(hurtRight);
       }, 200);
     }
-    setTimeout(() => {
-      this.hurting = false;
-      player1.imageGroup = playerTemp.imageGroup;
-    }, 500);
+    //   setTimeout(() => {
+    //     this.hurting = false;
+    //     if (!addedJetpack) {
+    //       player1.imageGroup = playerTemp.imageGroup;
+    //     } else {
+    //       player1.imageGroup = player1Jet.imageGroup;
+    //     }
+    //   }, 500);
   }
 
   dead() {
@@ -553,6 +559,22 @@ let level4Arrived = false;
 let movingCount = 0;
 let superPower = false;
 let superman = false;
+
+let backgroundMusicIntro = new sound("../music/backgroundMusicIntro.mp3", true);
+let backgroundMusicLevel1 = new sound(
+  "../music/backgroundMusicLevel1.mp3",
+  true
+);
+let backgroundMusicLevel2 = new sound(
+  "../music/backgroundMusicLevel2.mp3",
+  true
+);
+let soundEffectHit = new sound("../music/soundEffectHit.mp3");
+let soundEffectJump = new sound("../music/soundEffectJump.mp3");
+let soundEffectSpring = new sound("../music/soundEffectSpring.mp3");
+let soundEffectCoinBox = new sound("../music/soundEffectCoinBox.mp3");
+let soundEffectCoinGrab = new sound("../music/soundEffectCoinGrab.mp3");
+let soundEffectFalling = new sound("../music/soundEffectFalling.mp3");
 
 //JETPACK IDEA
 // let superPower = false;
@@ -625,6 +647,7 @@ let tempGlobalY = 0;
 let dialogOn = false;
 let pause = false;
 let tempx = 0;
+let level2Music = false;
 let clouds = [];
 let allFlies = [];
 let allSlimes = [];
@@ -635,8 +658,10 @@ injectHtml();
 let canvas = document.getElementById("canvas");
 let pickHTML = document.querySelectorAll(".pickhtml");
 let toolsEarned = document.querySelector(".toolsEarned");
-
+let startIcon = document.querySelector(".center");
+let wholeGame = document.querySelector(".wholeGame");
 let downloadTxt = document.querySelector(".download");
+let gameBoard = document.querySelector(".game-board");
 ctx = canvas.getContext("2d");
 createFlies();
 createSlimes();
@@ -1006,7 +1031,7 @@ function runAnimatedBlock(block) {
 function addTool() {
   toolsEarned.innerHTML = "";
   //60
-  if (player1.score >= 60) {
+  if (player1.score >= 1) {
     if (!addedSpring) {
       setTimeout(() => {
         pause = true;
@@ -1051,7 +1076,7 @@ function addTool() {
     attachListeners();
   }
   //175
-  if (player1.score > 175) {
+  if (player1.score > 2) {
     disableIcon("eraser");
     eraserToolSufix = "_used";
     if (!addedJetpack) {
@@ -1075,6 +1100,12 @@ function injectHtml() {
   });
   // builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
 }
+
+startIcon.addEventListener("click", function (e) {
+  startIcon.setAttribute("style", "display:none");
+  wholeGame.setAttribute("style", "display:");
+  backgroundMusicIntro.play();
+});
 
 function attachListeners() {
   pickHTML.forEach((element) => {
@@ -1122,6 +1153,8 @@ function attachListeners() {
       start = false;
       globalX = 0;
       player1.y = 100;
+      backgroundMusicIntro.stop();
+      backgroundMusicLevel1.play();
     }
     if (dragStart.mousex != dragEnd.mousex) {
       drag = true;
@@ -1225,6 +1258,7 @@ function attachListeners() {
     player1.moving(e);
     if (superPower) player1.allowedToJump = true;
     if (e.keyCode === 38 && player1.allowedToJump) {
+      if (!addedJetpack) soundEffectJump.play();
       player1.jumping = true;
       player1.allowedToJump = false;
       if (movingCount > 25) {
@@ -1247,6 +1281,11 @@ function attachListeners() {
   });
 }
 
+function adjustPositionGame() {
+  let adjustY = $(window).height() / 2 - canvas.height / 2;
+
+  gameBoard.setAttribute(`style`, `margin-top: ${adjustY}px`);
+}
 function loadNumbers() {
   for (i = 0; i < 10; i++) {
     score.push(new Score(10 + i * 30, 10, 30, 38, `images/hud_${i}.png`));
@@ -1339,7 +1378,6 @@ function checkCollision() {
         player1.health = 0;
         drawHealthBar();
       } else {
-        console.log("shouldve died");
         let a = 0;
         let b = 0;
         if (
@@ -1470,6 +1508,7 @@ function checkCollision() {
             pushCoin.x = jumpingXoption1 * 70;
             pushCoin.y = (jumpingY - 1) * 70;
             pushCoin.pushCoinCounter = 1;
+            soundEffectCoinBox.play();
             //////////////////////////////////////
 
             images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
@@ -1491,6 +1530,7 @@ function checkCollision() {
             pushCoin.x = jumpingXoption2 * 70;
             pushCoin.y = (jumpingY - 1) * 70;
             pushCoin.pushCoinCounter = 1;
+            soundEffectCoinBox.play();
             //////////////////////////////////////
 
             images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
@@ -1528,6 +1568,7 @@ function checkCollision() {
             Math.floor((player1.x + player1.width - 5) / 70)
           ].mass === "spring"
         ) {
+          soundEffectSpring.play();
           let a = 0;
           let b = 0;
           if (
@@ -1569,6 +1610,10 @@ function checkCollision() {
 }
 
 function grabObject(y, x) {
+  if (images[y][x].code === "coinGold") {
+    soundEffectCoinGrab.stop();
+    soundEffectCoinGrab.play();
+  }
   images[y][x].image = "images/air.png";
   images[y][x].code = "lvl1blk7";
   images[y][x].mass = "air";
@@ -1903,7 +1948,27 @@ function checkEnemyCollision() {
   }
 }
 
+function sound(src, loop) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  //this.sound.setAttribute("muted", "true");
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  if (loop) this.sound.setAttribute("loop", "true");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function () {
+    this.sound.play();
+  };
+  this.stop = function () {
+    this.sound.pause();
+  };
+}
+//player1.x = 11520;
+
 function updateCanvas() {
+  adjustPositionGame();
+
   if (superman) player1.health = 12;
   if (!pause) {
     clearAndDraw();
@@ -1915,15 +1980,20 @@ function updateCanvas() {
     pause = true;
     gameOver.showDialog();
   }
+
+  if (player1.x > 11540 && player1.y > 462 + player1.height && !level2Music) {
+    level2Music = true;
+    backgroundMusicLevel1.stop();
+    soundEffectFalling.play();
+    setTimeout(() => {
+      backgroundMusicLevel2.play();
+    }, 1000);
+  }
   // ctx.fillStyle = "white";
   // ctx.globalAlpha = 0.5;
   // ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
-// let nplayer = document.querySelector("audio");
-// nplayer.pause();
-// setTimeout(() => {
-//   nplayer.play();
-// }, 10000);
 
 //ctx.scale(0.5, 0.5);
+
 updateCanvas();
