@@ -561,14 +561,8 @@ let superPower = false;
 let superman = false;
 
 let backgroundMusicIntro = new sound("music/backgroundMusicIntro.mp3", true);
-let backgroundMusicLevel1 = new sound(
-  "../music/backgroundMusicLevel1.mp3",
-  true
-);
-let backgroundMusicLevel2 = new sound(
-  "../music/backgroundMusicLevel2.mp3",
-  true
-);
+let backgroundMusicLevel1 = new sound("music/backgroundMusicLevel1.mp3", true);
+let backgroundMusicLevel2 = new sound("music/backgroundMusicLevel2.mp3", true);
 let soundEffectHit = new sound("music/soundEffectHit.mp3");
 let soundEffectJump = new sound("music/soundEffectJump.mp3");
 let soundEffectSpring = new sound("music/soundEffectSpring.mp3");
