@@ -234,8 +234,6 @@ class Player extends Sprite {
   }
 
   draw() {
-    console.log(this.jumping, this.direction);
-
     if (!this.hurting) {
       if (this.direction === "right")
         if (!this.jumping) {
@@ -477,6 +475,9 @@ class Player extends Sprite {
   }
 
   hurt(hitDirection) {
+    console.log(player1.imageGroup);
+    player1.imageGroup = playerH.imageGroup;
+    console.log(player1.imageGroup);
     if (this.canGetDamage) {
       this.health -= 1;
       this.canGetDamage = false;
@@ -511,7 +512,8 @@ class Player extends Sprite {
     }
     setTimeout(() => {
       this.hurting = false;
-    }, 1000);
+      player1.imageGroup = playerTemp.imageGroup;
+    }, 500);
   }
 
   dead() {
@@ -530,6 +532,7 @@ class Player extends Sprite {
 
 // START OF CODE
 
+let cheatCode = "";
 let globalX = 0;
 let globalY = 0;
 let start = true;
@@ -549,6 +552,7 @@ let level3Arrived = false;
 let level4Arrived = false;
 let movingCount = 0;
 let superPower = false;
+let superman = false;
 
 //JETPACK IDEA
 // let superPower = false;
@@ -607,6 +611,10 @@ let customLandImage = "";
 let customLandMass = "";
 let customLandCode = "";
 let customLandValue = 0;
+let springToolSufix = "";
+let boxToolSufix = "";
+let eraserToolSufix = "";
+let jetpackToolSufix = "";
 let addedSpring = false;
 let addedBox = false;
 let addedEraser = false;
@@ -651,7 +659,9 @@ gameOver.loadImage();
 youWin.loadImage();
 startScreen.loadImage();
 let player1 = new Player(300, 120, 72, 97, player, 0);
+let playerTemp = new Player(300, 120, 72, 97, playerT, 0);
 let player1Jet = new Player(300, 120, 72, 97, playerJet, 0);
+let playerH = new Player(300, 120, 72, 97, playerHurt, 0);
 let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
 clouds[0] = new Sprite(30, 100, 128, 71, "images/cloud1.png");
 clouds[1] = new Sprite(30, 100, 128, 71, "images/cloud2.png");
@@ -685,7 +695,9 @@ attachListeners();
 loadNumbers();
 buildLand(land1);
 player1.loadImage();
+playerTemp.loadImage();
 player1Jet.loadImage();
+playerH.loadImage();
 scoreBoard.loadImage();
 clouds[0].loadImage();
 clouds[1].loadImage();
@@ -993,6 +1005,7 @@ function runAnimatedBlock(block) {
 
 function addTool() {
   toolsEarned.innerHTML = "";
+  //60
   if (player1.score >= 60) {
     if (!addedSpring) {
       setTimeout(() => {
@@ -1002,43 +1015,45 @@ function addTool() {
       }, 200);
     }
 
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp${springToolSufix}.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
     // log(toolsEarned.src);
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
+  //100
   if (player1.score >= 100) {
     if (!addedBox) {
       disableIcon("spring");
-
+      springToolSufix = "_used";
       setTimeout(() => {
         pause = true;
         newTool.showDialog();
         addedBox = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
-
+  //160
   if (player1.score > 160) {
     if (!addedEraser) {
       disableIcon("box");
+      boxToolSufix = "_used";
       setTimeout(() => {
         pause = true;
         newTool.showDialog();
         addedEraser = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
-
+  //175
   if (player1.score > 175) {
     disableIcon("eraser");
-
+    eraserToolSufix = "_used";
     if (!addedJetpack) {
       setTimeout(() => {
         pause = true;
@@ -1046,7 +1061,7 @@ function addTool() {
         addedJetpack = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack.png" alt="" data-mass="air" data-code="jetpack" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack${jetpackToolSufix}.png" alt="" data-mass="air" data-code="jetpack" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
@@ -1137,6 +1152,9 @@ function attachListeners() {
           images[Math.floor((dragStart.mousey - globalY) / 70)][
             Math.floor((dragStart.mousex - globalX) / 70)
           ].loadImage();
+          images[Math.floor((dragStart.mousey - globalY) / 70)][
+            Math.floor((dragStart.mousex - globalX) / 70)
+          ].animated = false;
 
           for (i = 0; i < images.length; i++)
             for (j = 0; j < images[i].length; j++) {
@@ -1144,6 +1162,7 @@ function attachListeners() {
             }
         } else {
           //JETPACK CODE
+          jetpackToolSufix = "_used";
           globalGravity = 0.2;
           globalJumpSpeed = -5;
           player1.imageGroup = player1Jet.imageGroup;
@@ -1185,6 +1204,11 @@ function attachListeners() {
   });
 
   document.addEventListener("keydown", (e) => {
+    cheatCode += e.key;
+    if (cheatCode.includes("superman")) {
+      superman = true;
+    }
+
     // console.log(
     //   "X:",
     //   player1.x,
@@ -1307,176 +1331,15 @@ function moveLand(player1SpeedDirection) {
 }
 
 function checkCollision() {
-  let playerCenterX = Math.floor((player1.x + player1.width / 2) / 70);
-  let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
-  if (images[playerCenterY][playerCenterX].mass === "death") {
-    player1.health = 0;
-    drawHealthBar();
-  }
-  // THIS CHECKS COLLISION WHILE MOVING RIGHT
-  if (player1.direction === "right")
-    if (
-      images[Math.floor(player1.y / 70)][
-        Math.floor((player1.x + player1.width) / 70)
-      ].mass === "solid" ||
-      images[Math.floor((player1.y + player1.height) / 70)][
-        Math.floor((player1.x + player1.width) / 70)
-      ].mass === "solid" ||
-      images[Math.floor((player1.y + player1.height / 2) / 70)][
-        Math.floor((player1.x + player1.width) / 70)
-      ].mass === "solid"
-    ) {
-      player1.stop();
-      movingLandStop();
-    }
-
-  // THIS CHECKS COLLISION WHILE MOVING LEFT
-  if (player1.direction === "left") {
-    if (
-      images[Math.floor(player1.y / 70)][Math.floor((player1.x - 5) / 70)]
-        .mass === "solid" ||
-      images[Math.floor((player1.y + player1.height) / 70)][
-        Math.floor((player1.x - 5) / 70)
-      ].mass === "solid" ||
-      images[Math.floor((player1.y + player1.height / 2) / 70)][
-        Math.floor((player1.x - 5) / 70)
-      ].mass === "solid"
-    ) {
-      player1.stop();
-      movingLandStop();
-    }
-    if (player1.x < 20) {
-      player1.stop();
-      movingLandStop();
-    }
-  }
-  // THIS CHECKS COLLISIONS WHILE JUMPING
-  if (player1.jumping) {
-    if (
-      // THIS CHECKS COLLISION WHILE JUMPING FOR THE FEET
-      images[Math.floor((player1.y + player1.height) / 70)][
-        // THE 5 HERE IS CUSHION FOR PLAYER
-        Math.floor((player1.x + 5) / 70)
-      ].mass === "solid" ||
-      images[Math.floor((player1.y + player1.height) / 70)][
-        Math.floor((player1.x + player1.width - 5) / 70)
-      ].mass === "solid"
-    ) {
-      player1.jumping = false;
-      player1.allowedToJump = true;
-      player1.accelerateUp = 0;
-      player1.accelerateDown = 0;
-      player1.allowedToJump = true;
-      player1.y =
-        images[Math.floor((player1.y + player1.height) / 70)][
-          Math.floor(player1.x / 70)
-        ].y -
-        player1.height -
-        1;
-      movingLandStop();
-    }
-
-    //SUCCION TEST
-    if (
-      images[Math.floor(player1.y / 70)][
-        // THE 5 HERE IS CUSHION FOR PLAYER
-        Math.floor((player1.x + 5) / 70)
-      ].mass === "suck" ||
-      images[Math.floor((player1.y + player1.height) / 70)][
-        Math.floor((player1.x + player1.width - 5) / 70)
-      ].mass === "suck"
-    ) {
-      player1.jumping = true;
-      player1.allowedToJump = false;
-      player1.accelerateUp = -1;
-      player1.accelerateDown = -globalGravity;
-      player1.allowedToJump = true;
-
-      movingLandStop();
-    }
-
-    // THIS CHECKS COLLISION WHILE JUMPING FOR THE HEAD
-    let jumpingXoption1 = Math.floor((player1.x + 10) / 70);
-    // THE 5 HERE IS CUSHION FOR PLAYER
-
-    let jumpingXoption2 = Math.floor((player1.x + player1.width - 5) / 70);
-    let jumpingY = Math.floor((player1.y - 10) / 70);
-    if (
-      images[jumpingY][jumpingXoption1].mass === "solid" ||
-      images[jumpingY][jumpingXoption2].mass === "solid"
-    ) {
-      player1.jumping = false;
-      player1.allowedToJump = false;
-      player1.accelerateUp = 0;
-      player1.accelerateDown = globalGravity + 0.2;
-      player1.allowedToJump = false;
-      player1.y += 5;
-      movingLandStop();
-      // UNTOUCHED COIN BOXES
-      if (images[jumpingY][jumpingXoption1].code === "boxCoin") {
-        player1.score += images[jumpingY][jumpingXoption1].value;
-        images[jumpingY][jumpingXoption1].value = 0;
-        addTool();
-        // ANIMATION OF COIN OUT OF BOX
-        pushCoin.x = jumpingXoption1 * 70;
-        pushCoin.y = (jumpingY - 1) * 70;
-        pushCoin.pushCoinCounter = 1;
-        //////////////////////////////////////
-
-        images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
-        images[jumpingY][jumpingXoption1].accelerateUp = -13;
-        images[jumpingY][jumpingXoption1].accelerateDown = 3;
-        setTimeout(() => {
-          images[jumpingY][jumpingXoption1].image =
-            "images/level1/boxCoin_disabled.png";
-          images[jumpingY][jumpingXoption1].code = "boxCoin_disabled";
-          images[jumpingY][jumpingXoption1].loadImage();
-          images[jumpingY][jumpingXoption1].bounceTarget = 0;
-        }, 300);
-      } else if (images[jumpingY][jumpingXoption2].code === "boxCoin") {
-        player1.score += images[jumpingY][jumpingXoption2].value;
-        images[jumpingY][jumpingXoption2].value = 0;
-
-        addTool();
-        // ANIMATION OF COIN OUT OF BOX
-        pushCoin.x = jumpingXoption2 * 70;
-        pushCoin.y = (jumpingY - 1) * 70;
-        pushCoin.pushCoinCounter = 1;
-        //////////////////////////////////////
-
-        images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
-        images[jumpingY][jumpingXoption2].accelerateUp = -13;
-        images[jumpingY][jumpingXoption2].accelerateDown = 3;
-        setTimeout(() => {
-          images[jumpingY][jumpingXoption2].image =
-            "images/level1/boxCoin_disabled.png";
-          images[jumpingY][jumpingXoption2].code = "boxCoin_disabled";
-          images[jumpingY][jumpingXoption2].loadImage();
-          images[jumpingY][jumpingXoption2].bounceTarget = 0;
-        }, 300);
-      }
-    }
-    // USED COIN BOXES
-    if (images[jumpingY][jumpingXoption1].code === "boxCoin_disabled") {
-      images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
-      images[jumpingY][jumpingXoption1].accelerateUp = -10;
-      images[jumpingY][jumpingXoption1].accelerateDown = 4;
-    } else if (images[jumpingY][jumpingXoption2].code === "boxCoin_disabled") {
-      images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
-      images[jumpingY][jumpingXoption2].accelerateUp = -10;
-      images[jumpingY][jumpingXoption2].accelerateDown = 4;
-    }
-
-    //SPRING ACTION
-    if (player1.accelerateUp > 0)
-      if (
-        images[Math.floor((player1.y + player1.height / 1.5) / 70)][
-          Math.floor((player1.x + 5) / 70)
-        ].mass === "spring" ||
-        images[Math.floor((player1.y + player1.height / 1.5) / 70)][
-          Math.floor((player1.x + player1.width - 5) / 70)
-        ].mass === "spring"
-      ) {
+  if (player1.y > 28) {
+    let playerCenterX = Math.floor((player1.x + player1.width / 2) / 70);
+    let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
+    if (images[playerCenterY][playerCenterX].mass === "death")
+      if (!superman) {
+        player1.health = 0;
+        drawHealthBar();
+      } else {
+        console.log("shouldve died");
         let a = 0;
         let b = 0;
         if (
@@ -1498,22 +1361,210 @@ function checkCollision() {
         }
         spring(a, b);
       }
-  }
+    // THIS CHECKS COLLISION WHILE MOVING RIGHT
+    if (player1.direction === "right")
+      if (
+        images[Math.floor(player1.y / 70)][
+          Math.floor((player1.x + player1.width) / 70)
+        ].mass === "solid" ||
+        images[Math.floor((player1.y + player1.height) / 70)][
+          Math.floor((player1.x + player1.width) / 70)
+        ].mass === "solid" ||
+        images[Math.floor((player1.y + player1.height / 2) / 70)][
+          Math.floor((player1.x + player1.width) / 70)
+        ].mass === "solid"
+      ) {
+        player1.stop();
+        movingLandStop();
+      }
 
-  //THIS ALLOWS PLAYER TO FALL WHILE NOT JUMPING BUT THE FLOOR DISAPPEARS
-  if (
-    !player1.jumping &&
-    images[Math.floor((player1.y + player1.height + 1) / 70)][
-      Math.floor(player1.x / 70)
-    ].mass != "solid" &&
-    images[Math.floor((player1.y + player1.height + 1) / 70)][
-      Math.floor((player1.x + player1.width) / 70)
-    ].mass != "solid"
-  ) {
-    player1.jumping = true;
-    player1.allowedToJump = false;
-    player1.accelerateUp = 0;
-    player1.accelerateDown = globalGravity;
+    // THIS CHECKS COLLISION WHILE MOVING LEFT
+    if (player1.direction === "left") {
+      if (
+        images[Math.floor(player1.y / 70)][Math.floor((player1.x - 5) / 70)]
+          .mass === "solid" ||
+        images[Math.floor((player1.y + player1.height) / 70)][
+          Math.floor((player1.x - 5) / 70)
+        ].mass === "solid" ||
+        images[Math.floor((player1.y + player1.height / 2) / 70)][
+          Math.floor((player1.x - 5) / 70)
+        ].mass === "solid"
+      ) {
+        player1.stop();
+        movingLandStop();
+      }
+      if (player1.x < 20) {
+        player1.stop();
+        movingLandStop();
+      }
+    }
+    // THIS CHECKS COLLISIONS WHILE JUMPING
+    if (player1.jumping) {
+      if (
+        // THIS CHECKS COLLISION WHILE JUMPING FOR THE FEET
+        images[Math.floor((player1.y + player1.height) / 70)][
+          // THE 5 HERE IS CUSHION FOR PLAYER
+          Math.floor((player1.x + 5) / 70)
+        ].mass === "solid" ||
+        images[Math.floor((player1.y + player1.height) / 70)][
+          Math.floor((player1.x + player1.width - 5) / 70)
+        ].mass === "solid"
+      ) {
+        player1.jumping = false;
+        player1.allowedToJump = true;
+        player1.accelerateUp = 0;
+        player1.accelerateDown = 0;
+        player1.allowedToJump = true;
+        player1.y =
+          images[Math.floor((player1.y + player1.height) / 70)][
+            Math.floor(player1.x / 70)
+          ].y -
+          player1.height -
+          1;
+        movingLandStop();
+      }
+
+      //SUCCION TEST
+      // if (
+      //   images[Math.floor(player1.y / 70)][
+      //     // THE 5 HERE IS CUSHION FOR PLAYER
+      //     Math.floor((player1.x + 5) / 70)
+      //   ].mass === "suck" ||
+      //   images[Math.floor((player1.y + player1.height) / 70)][
+      //     Math.floor((player1.x + player1.width - 5) / 70)
+      //   ].mass === "suck"
+      // ) {
+      //   player1.jumping = true;
+      //   player1.allowedToJump = false;
+      //   player1.accelerateUp = -1;
+      //   player1.accelerateDown = -globalGravity;
+      //   player1.allowedToJump = true;
+
+      //   movingLandStop();
+      // }
+
+      // THIS CHECKS COLLISION WHILE JUMPING FOR THE HEAD
+      let jumpingXoption1 = Math.floor((player1.x + 10) / 70);
+      // THE 5 HERE IS CUSHION FOR PLAYER
+
+      let jumpingXoption2 = Math.floor((player1.x + player1.width - 5) / 70);
+      let jumpingY = Math.floor((player1.y - 10) / 70);
+      if (jumpingY >= 0 && jumpingXoption1 >= 0 && jumpingXoption2 >= 0) {
+        if (
+          images[jumpingY][jumpingXoption1].mass === "solid" ||
+          images[jumpingY][jumpingXoption2].mass === "solid"
+        ) {
+          player1.jumping = false;
+          player1.allowedToJump = false;
+          player1.accelerateUp = 0;
+          player1.accelerateDown = globalGravity + 0.2;
+          player1.allowedToJump = false;
+          player1.y += 5;
+          movingLandStop();
+          // UNTOUCHED COIN BOXES
+          if (images[jumpingY][jumpingXoption1].code === "boxCoin") {
+            player1.score += images[jumpingY][jumpingXoption1].value;
+            images[jumpingY][jumpingXoption1].value = 0;
+            addTool();
+            // ANIMATION OF COIN OUT OF BOX
+            pushCoin.x = jumpingXoption1 * 70;
+            pushCoin.y = (jumpingY - 1) * 70;
+            pushCoin.pushCoinCounter = 1;
+            //////////////////////////////////////
+
+            images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
+            images[jumpingY][jumpingXoption1].accelerateUp = -13;
+            images[jumpingY][jumpingXoption1].accelerateDown = 3;
+            setTimeout(() => {
+              images[jumpingY][jumpingXoption1].image =
+                "images/level1/boxCoin_disabled.png";
+              images[jumpingY][jumpingXoption1].code = "boxCoin_disabled";
+              images[jumpingY][jumpingXoption1].loadImage();
+              images[jumpingY][jumpingXoption1].bounceTarget = 0;
+            }, 300);
+          } else if (images[jumpingY][jumpingXoption2].code === "boxCoin") {
+            player1.score += images[jumpingY][jumpingXoption2].value;
+            images[jumpingY][jumpingXoption2].value = 0;
+
+            addTool();
+            // ANIMATION OF COIN OUT OF BOX
+            pushCoin.x = jumpingXoption2 * 70;
+            pushCoin.y = (jumpingY - 1) * 70;
+            pushCoin.pushCoinCounter = 1;
+            //////////////////////////////////////
+
+            images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
+            images[jumpingY][jumpingXoption2].accelerateUp = -13;
+            images[jumpingY][jumpingXoption2].accelerateDown = 3;
+            setTimeout(() => {
+              images[jumpingY][jumpingXoption2].image =
+                "images/level1/boxCoin_disabled.png";
+              images[jumpingY][jumpingXoption2].code = "boxCoin_disabled";
+              images[jumpingY][jumpingXoption2].loadImage();
+              images[jumpingY][jumpingXoption2].bounceTarget = 0;
+            }, 300);
+          }
+        }
+        // USED COIN BOXES
+        if (images[jumpingY][jumpingXoption1].code === "boxCoin_disabled") {
+          images[jumpingY][jumpingXoption1].bounceTarget = jumpingY * 70;
+          images[jumpingY][jumpingXoption1].accelerateUp = -10;
+          images[jumpingY][jumpingXoption1].accelerateDown = 4;
+        } else if (
+          images[jumpingY][jumpingXoption2].code === "boxCoin_disabled"
+        ) {
+          images[jumpingY][jumpingXoption2].bounceTarget = jumpingY * 70;
+          images[jumpingY][jumpingXoption2].accelerateUp = -10;
+          images[jumpingY][jumpingXoption2].accelerateDown = 4;
+        }
+      }
+      //SPRING ACTION
+      if (player1.accelerateUp > 0)
+        if (
+          images[Math.floor((player1.y + player1.height / 1.5) / 70)][
+            Math.floor((player1.x + 5) / 70)
+          ].mass === "spring" ||
+          images[Math.floor((player1.y + player1.height / 1.5) / 70)][
+            Math.floor((player1.x + player1.width - 5) / 70)
+          ].mass === "spring"
+        ) {
+          let a = 0;
+          let b = 0;
+          if (
+            images[Math.floor((player1.y + player1.height / 1.5) / 70)][
+              Math.floor((player1.x + 5) / 70)
+            ].mass === "spring"
+          ) {
+            a = Math.floor((player1.y + player1.height / 1.5) / 70);
+            b = Math.floor((player1.x + 5) / 70);
+          }
+
+          if (
+            images[Math.floor((player1.y + player1.height / 1.5) / 70)][
+              Math.floor((player1.x + player1.width - 5) / 70)
+            ].mass === "spring"
+          ) {
+            a = Math.floor((player1.y + player1.height / 1.5) / 70);
+            b = Math.floor((player1.x + player1.width - 5) / 70);
+          }
+          spring(a, b);
+        }
+    }
+    //THIS ALLOWS PLAYER TO FALL WHILE NOT JUMPING BUT THE FLOOR DISAPPEARS
+    if (
+      !player1.jumping &&
+      images[Math.floor((player1.y + player1.height + 1) / 70)][
+        Math.floor(player1.x / 70)
+      ].mass != "solid" &&
+      images[Math.floor((player1.y + player1.height + 1) / 70)][
+        Math.floor((player1.x + player1.width) / 70)
+      ].mass != "solid"
+    ) {
+      player1.jumping = true;
+      player1.allowedToJump = false;
+      player1.accelerateUp = 0;
+      player1.accelerateDown = globalGravity;
+    }
   }
 }
 
@@ -1557,7 +1608,7 @@ function disableIcon(data) {
       if (element.getAttribute("data-code") === "springboardUp") {
         element.setAttribute("data-code", "");
 
-        element.setAttribute("src", "images/level1/spring_used.png");
+        element.setAttribute("src", "images/level1/springBoardUp_used.png");
       }
     });
   }
@@ -1778,79 +1829,82 @@ function showBigStar() {
 }
 
 function checkEnemyCollision() {
-  let cushion = 10;
-  //CHECK COLLISION WITH FLIES
-  allFlies.forEach((element) => {
-    if (
-      player1.x + cushion < element.x + element.width &&
-      player1.x + player1.width - cushion > element.x &&
-      player1.y + cushion < element.y + element.height &&
-      player1.y + player1.height - cushion > element.y &&
-      player1.canGetDamage
-    ) {
-      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
-        player1.hurt("right");
-      } else {
-        player1.hurt("left");
+  if (!superman) {
+    let cushion = 10;
+    //CHECK COLLISION WITH FLIES
+    allFlies.forEach((element) => {
+      if (
+        player1.x + cushion < element.x + element.width &&
+        player1.x + player1.width - cushion > element.x &&
+        player1.y + cushion < element.y + element.height &&
+        player1.y + player1.height - cushion > element.y &&
+        player1.canGetDamage
+      ) {
+        if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+          player1.hurt("right");
+        } else {
+          player1.hurt("left");
+        }
       }
-    }
-  });
-  cushion = 15;
+    });
+    cushion = 15;
 
-  allSlimes.forEach((element) => {
-    if (
-      player1.x + cushion < element.x + element.width &&
-      player1.x + player1.width - cushion > element.x &&
-      player1.y + cushion < element.y + element.height &&
-      player1.y + player1.height - cushion > element.y &&
-      player1.canGetDamage
-    ) {
-      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
-        player1.hurt("right");
-      } else {
-        player1.hurt("left");
+    allSlimes.forEach((element) => {
+      if (
+        player1.x + cushion < element.x + element.width &&
+        player1.x + player1.width - cushion > element.x &&
+        player1.y + cushion < element.y + element.height &&
+        player1.y + player1.height - cushion > element.y &&
+        player1.canGetDamage
+      ) {
+        if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+          player1.hurt("right");
+        } else {
+          player1.hurt("left");
+        }
       }
-    }
-  });
+    });
 
-  cushion = 15;
+    cushion = 15;
 
-  allSnails.forEach((element) => {
-    if (
-      player1.x + cushion < element.x + element.width &&
-      player1.x + player1.width - cushion > element.x &&
-      player1.y + cushion < element.y + element.height &&
-      player1.y + player1.height - cushion > element.y &&
-      player1.canGetDamage
-    ) {
-      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
-        player1.hurt("right");
-      } else {
-        player1.hurt("left");
+    allSnails.forEach((element) => {
+      if (
+        player1.x + cushion < element.x + element.width &&
+        player1.x + player1.width - cushion > element.x &&
+        player1.y + cushion < element.y + element.height &&
+        player1.y + player1.height - cushion > element.y &&
+        player1.canGetDamage
+      ) {
+        if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+          player1.hurt("right");
+        } else {
+          player1.hurt("left");
+        }
       }
-    }
-  });
+    });
 
-  cushion = 15;
+    cushion = 15;
 
-  allFireBalls.forEach((element) => {
-    if (
-      player1.x + cushion < element.x + element.width &&
-      player1.x + player1.width - cushion > element.x &&
-      player1.y + cushion < element.y + element.height &&
-      player1.y + player1.height - cushion > element.y &&
-      player1.canGetDamage
-    ) {
-      if (player1.x + player1.width / 2 > element.x + element.width / 2) {
-        player1.hurt("right");
-      } else {
-        player1.hurt("left");
+    allFireBalls.forEach((element) => {
+      if (
+        player1.x + cushion < element.x + element.width &&
+        player1.x + player1.width - cushion > element.x &&
+        player1.y + cushion < element.y + element.height &&
+        player1.y + player1.height - cushion > element.y &&
+        player1.canGetDamage
+      ) {
+        if (player1.x + player1.width / 2 > element.x + element.width / 2) {
+          player1.hurt("right");
+        } else {
+          player1.hurt("left");
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 function updateCanvas() {
+  if (superman) player1.health = 12;
   if (!pause) {
     clearAndDraw();
   }
