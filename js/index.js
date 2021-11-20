@@ -1057,7 +1057,7 @@ function addTool() {
         addedEraser = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7${springToolSufix}" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
@@ -1608,7 +1608,7 @@ function disableIcon(data) {
       if (element.getAttribute("data-code") === "springboardUp") {
         element.setAttribute("data-code", "");
 
-        element.setAttribute("src", "images/level1/springBoardUp_used.png");
+        element.setAttribute("src", "images/level1/springboardUp_used.png");
       }
     });
   }
