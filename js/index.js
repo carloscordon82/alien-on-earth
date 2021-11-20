@@ -1094,7 +1094,8 @@ function injectHtml() {
   htmlBuilder.forEach((element) => {
     builder.innerHTML += `<img class="pickhtml" display="block" src="${element.image}" alt="" data-mass="${element.mass}" data-code="${element.code}" data-value="${element.value}"></img>`;
   });
-  // builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
+  if (editor)
+    builder.innerHTML += `<img class="pickhtml download" display="block" src="images/downloadPng.png"></img>`;
 }
 
 startIcon.addEventListener("click", function (e) {
@@ -1121,12 +1122,13 @@ function attachListeners() {
       element.style = ` border: 2px solid blue;`;
     });
   });
-
-  // downloadTxt.addEventListener("click", function (event) {
-  //   let stringExport = JSON.stringify(exportGrid);
-  //   stringExport = stringExport.replace(/\"/g, " ");
-  //   download("json.txt", stringExport);
-  // });
+  if (editor) {
+    downloadTxt.addEventListener("click", function (event) {
+      let stringExport = JSON.stringify(exportGrid);
+      stringExport = stringExport.replace(/\"/g, " ");
+      download("json.txt", stringExport);
+    });
+  }
 
   canvas.addEventListener("mousedown", function (event) {
     //requestAnimationFrame(updateCanvas);
@@ -1228,12 +1230,13 @@ function attachListeners() {
       // ctx.translate(dragEnd.x - dragStart.x, dragEnd.y - dragStart.y);
       let newX = tempGlobalX + dragEnd.mousex - dragStart.mousex;
       if (newX <= 0 && newX >= -10630) globalX = newX;
-      //globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
+      if (editor) globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
     }
   });
 
   document.addEventListener("keydown", (e) => {
     cheatCode += e.key;
+    console.log(cheatCode);
     if (cheatCode.includes("superman")) {
       superman = true;
     }
@@ -1371,7 +1374,9 @@ function checkCollision() {
     let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
     console.log(
       "checking before death",
-      images[playerCenterY][playerCenterX].mass
+      images[playerCenterY][playerCenterX].mass,
+      player1.direction,
+      player1.jumping
     );
     if (images[playerCenterY][playerCenterX].mass === "death")
       if (!superman) {
@@ -1400,7 +1405,7 @@ function checkCollision() {
         spring(a, b);
       }
     // THIS CHECKS COLLISION WHILE MOVING RIGHT
-    if (player1.direction === "right")
+    if (player1.direction === "right" || player1.direction === "hurt_left")
       if (
         images[Math.floor(player1.y / 70)][
           Math.floor((player1.x + player1.width) / 70)
@@ -1417,7 +1422,7 @@ function checkCollision() {
       }
 
     // THIS CHECKS COLLISION WHILE MOVING LEFT
-    if (player1.direction === "left") {
+    if (player1.direction === "left" || player1.direction === "hurt_right") {
       if (
         images[Math.floor(player1.y / 70)][Math.floor((player1.x - 5) / 70)]
           .mass === "solid" ||
@@ -1709,18 +1714,6 @@ function drawClouds() {
   let randomY = 0;
   let randomCloud = 0;
 
-  // BIGGER CLOUDS
-  for (i = 0; i < 40; i++) {
-    if (randomY === 200) randomY = 0;
-    if (randomCloud === 3) randomCloud = 0;
-    clouds[randomCloud].width = 128;
-    clouds[randomCloud].height = 71;
-    clouds[randomCloud].y = 100 + randomY;
-    clouds[randomCloud].x = i * 700 - globalX / 3;
-    clouds[randomCloud].draw();
-    randomY += 40;
-    randomCloud++;
-  }
   // SMALLER CLOUDS
   randomY = 0;
   randomCloud = 0;
@@ -1732,6 +1725,18 @@ function drawClouds() {
     clouds[randomCloud].height = 35;
     clouds[randomCloud].y = 300 + randomY;
     clouds[randomCloud].draw();
+    randomCloud++;
+  }
+  // BIGGER CLOUDS
+  for (i = 0; i < 40; i++) {
+    if (randomY === 200) randomY = 0;
+    if (randomCloud === 3) randomCloud = 0;
+    clouds[randomCloud].width = 128;
+    clouds[randomCloud].height = 71;
+    clouds[randomCloud].y = 100 + randomY;
+    clouds[randomCloud].x = i * 700 - globalX / 3;
+    clouds[randomCloud].draw();
+    randomY += 40;
     randomCloud++;
   }
 }
