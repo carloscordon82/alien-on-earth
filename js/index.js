@@ -1025,8 +1025,11 @@ function addTool() {
         addedSpring = true;
       }, 200);
     }
-
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp${springToolSufix}.png" alt="" data-mass="spring${springToolSufix}" data-code="springboardUp${springToolSufix}" data-value=""></img>`;
+    if (springToolSufix) {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp${springToolSufix}.png" alt="" data-mass="" data-code="" data-value=""></img>`;
+    } else {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
+    }
     // log(toolsEarned.src);
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
@@ -1042,7 +1045,11 @@ function addTool() {
         addedBox = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled${boxToolSufix}" data-value=""></img>`;
+    if (boxToolSufix) {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled${boxToolSufix}" data-value=""></img>`;
+    } else {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="" data-code="" data-value=""></img>`;
+    }
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
@@ -1057,7 +1064,11 @@ function addTool() {
         addedEraser = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
+    if (eraserToolSufix) {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
+    } else {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="" data-code="" data-value=""></img>`;
+    }
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
