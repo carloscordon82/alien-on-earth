@@ -538,47 +538,6 @@ class Player extends Sprite {
 
 // START OF CODE
 
-let cheatCode = "";
-let globalX = 0;
-let globalY = 0;
-let start = true;
-let globalCoinStep = 0;
-let globalSpeed = 0;
-let trueDirection = "";
-let mousex = 0;
-let mousey = 0;
-let dead = false;
-let hit = false;
-let drag = false;
-let dragStart;
-let dragEnd;
-let globalGravity = 1;
-let globalJumpSpeed = -15;
-let level2Arrived = false;
-let level3Arrived = false;
-let level4Arrived = false;
-let movingCount = 0;
-let superPower = false;
-let superman = false;
-
-let backgroundMusicIntro = new sound("music/backgroundMusicIntro.mp3", true);
-let backgroundMusicLevel1 = new sound("music/backgroundMusicLevel1.mp3", true);
-let backgroundMusicLevel2 = new sound("music/backgroundMusicLevel2.mp3", true);
-let backgroundMusicWin = new sound("music/backgroundMusicWin.mp3", true);
-let soundEffectHit = new sound("music/soundEffectHit.mp3");
-let soundEffectJump = new sound("music/soundEffectJump.mp3");
-let soundEffectSpring = new sound("music/soundEffectSpring.mp3");
-let soundEffectCoinBox = new sound("music/soundEffectCoinBox.mp3");
-let soundEffectCoinGrab = new sound("music/soundEffectCoinGrab.mp3");
-let soundEffectFalling = new sound("music/soundEffectFalling.mp3");
-let soundEffectHeart = new sound("music/soundEffectHeart.mp3");
-let soundEffectDead = new sound("music/soundEffectDead.mp3");
-
-//JETPACK IDEA
-// let superPower = false;
-// let globalGravity = 0.2;
-// let globalJumpSpeed = -5;
-
 let images = [
   [],
   [],
@@ -623,6 +582,40 @@ let exportGrid = [
   [],
   [],
 ];
+let backgroundMusicIntro = new sound("music/backgroundMusicIntro.mp3", true);
+let backgroundMusicLevel1 = new sound("music/backgroundMusicLevel1.mp3", true);
+let backgroundMusicLevel2 = new sound("music/backgroundMusicLevel2.mp3", true);
+let backgroundMusicWin = new sound("music/backgroundMusicWin.mp3", true);
+let soundEffectHit = new sound("music/soundEffectHit.mp3");
+let soundEffectJump = new sound("music/soundEffectJump.mp3");
+let soundEffectSpring = new sound("music/soundEffectSpring.mp3");
+let soundEffectCoinBox = new sound("music/soundEffectCoinBox.mp3");
+let soundEffectCoinGrab = new sound("music/soundEffectCoinGrab.mp3");
+let soundEffectFalling = new sound("music/soundEffectFalling.mp3");
+let soundEffectHeart = new sound("music/soundEffectHeart.mp3");
+let soundEffectDead = new sound("music/soundEffectDead.mp3");
+let cheatCode = "";
+let globalX = 0;
+let globalY = 0;
+let start = true;
+let globalCoinStep = 0;
+let globalSpeed = 0;
+let trueDirection = "";
+let mousex = 0;
+let mousey = 0;
+let dead = false;
+let hit = false;
+let drag = false;
+let dragStart;
+let dragEnd;
+let globalGravity = 1;
+let globalJumpSpeed = -15;
+let level2Arrived = false;
+let level3Arrived = false;
+let level4Arrived = false;
+let movingCount = 0;
+let superPower = false;
+let superman = false;
 let win = false;
 let bigCounter = 0;
 let bigCounterUP = -1;
@@ -668,19 +661,12 @@ createHealthBar();
 createFireBalls();
 let animatedCoin = new AnimatedBlock(5100, 100, 70, 70, coinSprite, "loop");
 let pushCoin = new AnimatedBlock(5200, 200, 70, 70, pushCoinSprite, "once");
+let finalCoin = new AnimatedBlock(5100, 100, 270, 270, finalCoins, "loop");
 let toolBoard = new Sprite(400, 10, 650 / 2, 237 / 2, "images/toolBoard.png");
 let newTool = new Dialog(200, 200, 650, 261, "images/newTool.png");
 let gameOver = new Dialog(200, 200, 650, 261, "images/gameOver.png");
 let youWin = new Dialog(200, 200, 650, 261, "images/youWin.png");
 let startScreen = new startDialog(200, 200, 650, 261, "images/intro.png");
-
-toolBoard.loadImage();
-pushCoin.loadImages();
-animatedCoin.loadImages();
-newTool.loadImage();
-gameOver.loadImage();
-youWin.loadImage();
-startScreen.loadImage();
 let player1 = new Player(300, 120, 72, 97, player, 0);
 let playerTemp = new Player(300, 120, 72, 97, playerT, 0);
 let player1Jet = new Player(300, 120, 72, 97, playerJet, 0);
@@ -689,10 +675,6 @@ let scoreBoard = new Score(80, 10, 413 / 2, 237 / 2, "images/scoreBoard.png");
 clouds[0] = new Sprite(30, 100, 128, 71, "images/cloud1.png");
 clouds[1] = new Sprite(30, 100, 128, 71, "images/cloud2.png");
 clouds[2] = new Sprite(30, 100, 128, 71, "images/cloud3.png");
-
-let finalCoin = new AnimatedBlock(5100, 100, 270, 270, finalCoins, "loop");
-finalCoin.loadImages();
-
 let grassBackground = new Sprite(
   0,
   0,
@@ -700,8 +682,6 @@ let grassBackground = new Sprite(
   700,
   "images/level1/grassBackground.png"
 );
-grassBackground.loadImage();
-
 let iceBackground = new Sprite(
   0,
   0,
@@ -709,11 +689,18 @@ let iceBackground = new Sprite(
   700,
   "images/level2/iceBackground.png"
 );
-iceBackground.loadImage();
-
 let caveBackground = new Sprite(0, 700, 700, 700, "images/cave.png");
+toolBoard.loadImage();
+pushCoin.loadImages();
+animatedCoin.loadImages();
+newTool.loadImage();
+gameOver.loadImage();
+youWin.loadImage();
+startScreen.loadImage();
+finalCoin.loadImages();
+grassBackground.loadImage();
+iceBackground.loadImage();
 caveBackground.loadImage();
-
 attachListeners();
 attachKeyListeners();
 loadNumbers();
@@ -1030,7 +1017,7 @@ function runAnimatedBlock(block) {
 function addTool() {
   toolsEarned.innerHTML = "";
   //60
-  if (player1.score >= 60) {
+  if (player1.score >= 50) {
     if (!addedSpring) {
       setTimeout(() => {
         pause = true;
@@ -1039,13 +1026,13 @@ function addTool() {
       }, 200);
     }
 
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp${springToolSufix}.png" alt="" data-mass="spring" data-code="springboardUp" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/springboardUp${springToolSufix}.png" alt="" data-mass="spring${springToolSufix}" data-code="springboardUp${springToolSufix}" data-value=""></img>`;
     // log(toolsEarned.src);
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
   //100
-  if (player1.score >= 100) {
+  if (player1.score >= 90) {
     if (!addedBox) {
       disableIcon("spring");
       springToolSufix = "_used";
@@ -1055,12 +1042,12 @@ function addTool() {
         addedBox = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled${boxToolSufix}" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
   //160
-  if (player1.score > 160) {
+  if (player1.score > 150) {
     if (!addedEraser) {
       disableIcon("box");
       boxToolSufix = "_used";
@@ -1070,12 +1057,12 @@ function addTool() {
         addedEraser = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7${springToolSufix}" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
   //175
-  if (player1.score > 175) {
+  if (player1.score > 165) {
     disableIcon("eraser");
     eraserToolSufix = "_used";
     if (!addedJetpack) {
@@ -1085,7 +1072,7 @@ function addTool() {
         addedJetpack = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack${jetpackToolSufix}.png" alt="" data-mass="air" data-code="jetpack" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack${jetpackToolSufix}.png" alt="" data-mass="air" data-code="jetpack${springToolSufix}" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
@@ -1382,23 +1369,6 @@ function checkCollision() {
       } else {
         let a = 0;
         let b = 0;
-        if (
-          images[Math.floor((player1.y + player1.height / 1.5) / 70)][
-            Math.floor((player1.x + 5) / 70)
-          ].mass === "spring"
-        ) {
-          a = Math.floor((player1.y + player1.height / 1.5) / 70);
-          b = Math.floor((player1.x + 5) / 70);
-        }
-
-        if (
-          images[Math.floor((player1.y + player1.height / 1.5) / 70)][
-            Math.floor((player1.x + player1.width - 5) / 70)
-          ].mass === "spring"
-        ) {
-          a = Math.floor((player1.y + player1.height / 1.5) / 70);
-          b = Math.floor((player1.x + player1.width - 5) / 70);
-        }
         spring(a, b);
       }
     // THIS CHECKS COLLISION WHILE MOVING RIGHT
@@ -1463,25 +1433,6 @@ function checkCollision() {
           1;
         movingLandStop();
       }
-
-      //SUCCION TEST
-      // if (
-      //   images[Math.floor(player1.y / 70)][
-      //     // THE 5 HERE IS CUSHION FOR PLAYER
-      //     Math.floor((player1.x + 5) / 70)
-      //   ].mass === "suck" ||
-      //   images[Math.floor((player1.y + player1.height) / 70)][
-      //     Math.floor((player1.x + player1.width - 5) / 70)
-      //   ].mass === "suck"
-      // ) {
-      //   player1.jumping = true;
-      //   player1.allowedToJump = false;
-      //   player1.accelerateUp = -1;
-      //   player1.accelerateDown = -globalGravity;
-      //   player1.allowedToJump = true;
-
-      //   movingLandStop();
-      // }
 
       // THIS CHECKS COLLISION WHILE JUMPING FOR THE HEAD
       let jumpingXoption1 = Math.floor((player1.x + 10) / 70);
