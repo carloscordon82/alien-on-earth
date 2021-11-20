@@ -1046,9 +1046,9 @@ function addTool() {
       }, 200);
     }
     if (boxToolSufix) {
-      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="solid" data-code="boxItem_disabled${boxToolSufix}" data-value=""></img>`;
-    } else {
       toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled${boxToolSufix}.png" alt="" data-mass="" data-code="" data-value=""></img>`;
+    } else {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/level1/boxItem_disabled.png" alt="" data-mass="solid" data-code="boxItem_disabled" data-value=""></img>`;
     }
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
@@ -1065,17 +1065,17 @@ function addTool() {
       }, 200);
     }
     if (eraserToolSufix) {
-      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
-    } else {
       toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="" data-code="" data-value=""></img>`;
+    } else {
+      toolsEarned.innerHTML += `<img class="pickhtml"  src="images/eraser${eraserToolSufix}.png" alt="" data-mass="air" data-code="lvl1blk7" data-value=""></img>`;
     }
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
   //175
-  if (player1.score > 165) {
-    disableIcon("eraser");
-    eraserToolSufix = "_used";
+  if (player1.score > 170) {
+    //disableIcon("eraser");
+    //eraserToolSufix = "_used";
     if (!addedJetpack) {
       setTimeout(() => {
         pause = true;
@@ -1083,7 +1083,7 @@ function addTool() {
         addedJetpack = true;
       }, 200);
     }
-    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack${jetpackToolSufix}.png" alt="" data-mass="air" data-code="jetpack${springToolSufix}" data-value=""></img>`;
+    toolsEarned.innerHTML += `<img class="pickhtml"  src="images/jetpack${jetpackToolSufix}.png" alt="" data-mass="air" data-code="jetpack${jetpackToolSufix}" data-value=""></img>`;
     pickHTML = document.querySelectorAll(".pickhtml");
     attachListeners();
   }
