@@ -1932,7 +1932,7 @@ function sound(src, loop) {
 }
 
 function checkIfWin() {
-  if (player1.x < 280 && player1.y > 1030) {
+  if (player1.x < 280 && player1.y > 900) {
     backgroundMusicLevel1.stop();
     backgroundMusicLevel2.stop();
     backgroundMusicWin.play();
