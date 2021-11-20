@@ -538,6 +538,7 @@ class Player extends Sprite {
 
 // START OF CODE
 
+const queryString = window.location.search;
 let images = [
   [],
   [],
@@ -713,6 +714,7 @@ scoreBoard.loadImage();
 clouds[0].loadImage();
 clouds[1].loadImage();
 clouds[2].loadImage();
+if (queryString) skipIntro();
 
 function createFireBalls() {
   for (let i = 0; i < 20; i++) {
@@ -1105,6 +1107,16 @@ startIcon.addEventListener("click", function (e) {
   backgroundMusicIntro.play();
 });
 
+function skipIntro() {
+  startIcon.setAttribute("style", "display:none");
+  wholeGame.setAttribute("style", "display:");
+  start = false;
+  globalX = 0;
+  player1.y = 100;
+  backgroundMusicIntro.stop();
+  backgroundMusicLevel1.play();
+}
+
 function attachListeners() {
   pickHTML.forEach((element) => {
     element.style = ` border: 2px solid white;`;
@@ -1207,9 +1219,10 @@ function attachListeners() {
     drag = false;
     if (pause) {
       if (pause && player1.health === 0) {
-        location.reload();
+        //location.reload();
+        window.location.replace(window.location.href + "?reset");
       } else if (pause && win) {
-        location.reload();
+        window.location.replace(window.location.href + "?reset");
       } else {
         setTimeout(() => {
           pause = false;
