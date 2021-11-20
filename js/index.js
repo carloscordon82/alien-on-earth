@@ -42,7 +42,7 @@ class Dialog extends Sprite {
       ctx.globalAlpha = 0.9;
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.globalAlpha = 1;
-      toolBoard.draw();
+      if (!win && !dead) toolBoard.draw();
       this.x = ctx.canvas.width / 2 - this.width / 2;
       this.y = ctx.canvas.height / 2 - this.height / 2;
       this.draw();
@@ -547,6 +547,7 @@ let globalSpeed = 0;
 let trueDirection = "";
 let mousex = 0;
 let mousey = 0;
+let dead = false;
 let hit = false;
 let drag = false;
 let dragStart;
@@ -563,6 +564,7 @@ let superman = false;
 let backgroundMusicIntro = new sound("music/backgroundMusicIntro.mp3", true);
 let backgroundMusicLevel1 = new sound("music/backgroundMusicLevel1.mp3", true);
 let backgroundMusicLevel2 = new sound("music/backgroundMusicLevel2.mp3", true);
+let backgroundMusicWin = new sound("music/backgroundMusicWin.mp3", true);
 let soundEffectHit = new sound("music/soundEffectHit.mp3");
 let soundEffectJump = new sound("music/soundEffectJump.mp3");
 let soundEffectSpring = new sound("music/soundEffectSpring.mp3");
@@ -713,6 +715,7 @@ let caveBackground = new Sprite(0, 700, 700, 700, "images/cave.png");
 caveBackground.loadImage();
 
 attachListeners();
+attachKeyListeners();
 loadNumbers();
 buildLand(land1);
 player1.loadImage();
@@ -1233,10 +1236,10 @@ function attachListeners() {
       if (editor) globalY = tempGlobalY + dragEnd.mousey - dragStart.mousey;
     }
   });
-
+}
+function attachKeyListeners() {
   document.addEventListener("keydown", (e) => {
     cheatCode += e.key;
-    console.log(cheatCode);
     if (cheatCode.includes("superman")) {
       superman = true;
     }
@@ -1279,7 +1282,6 @@ function attachListeners() {
     }
   });
 }
-
 function adjustPositionGame() {
   let adjustY = $(window).height() / 2 - canvas.height / 2;
 
@@ -1372,12 +1374,7 @@ function checkCollision() {
   if (player1.y > 28) {
     let playerCenterX = Math.floor((player1.x + player1.width / 2) / 70);
     let playerCenterY = Math.floor((player1.y + player1.height / 2) / 70);
-    console.log(
-      "checking before death",
-      images[playerCenterY][playerCenterX].mass,
-      player1.direction,
-      player1.jumping
-    );
+
     if (images[playerCenterY][playerCenterX].mass === "death")
       if (!superman) {
         player1.health = 0;
@@ -1971,9 +1968,21 @@ function sound(src, loop) {
     this.sound.pause();
   };
 }
-//player1.x = 11520;
 
+function checkIfWin() {
+  if (player1.x < 280 && player1.y > 1030) {
+    backgroundMusicLevel1.stop();
+    backgroundMusicLevel2.stop();
+    backgroundMusicWin.play();
+    pause = true;
+    win = true;
+    youWin.showDialog();
+  }
+}
+//player1.x = 11520;
+//player1.y = 1200;
 function updateCanvas() {
+  checkIfWin();
   adjustPositionGame();
 
   if (superman) player1.health = 12;
@@ -1985,6 +1994,7 @@ function updateCanvas() {
   }
   if (player1.health === 0) {
     pause = true;
+    dead = true;
     gameOver.showDialog();
     backgroundMusicLevel1.stop();
     backgroundMusicLevel2.stop();
