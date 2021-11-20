@@ -1220,9 +1220,17 @@ function attachListeners() {
     if (pause) {
       if (pause && player1.health === 0) {
         //location.reload();
-        window.location.replace(window.location.href + "?reset");
+        if (!queryString) {
+          window.location.replace(window.location.href + "?reset");
+        } else {
+          location.reload();
+        }
       } else if (pause && win) {
-        window.location.replace(window.location.href + "?reset");
+        if (!queryString) {
+          window.location.replace(window.location.href + "?reset");
+        } else {
+          location.reload();
+        }
       } else {
         setTimeout(() => {
           pause = false;
