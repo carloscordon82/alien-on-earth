@@ -1,5 +1,6 @@
-// CLASSES
+// CLASSES //
 
+// MASTER CLASS //
 class Sprite {
   constructor(x, y, width, height, image, speed) {
     this.x = x;
@@ -27,6 +28,8 @@ class Sprite {
   }
 }
 
+// DIALOG CLASS //
+
 class Dialog extends Sprite {
   constructor(x, y, width, height, image) {
     super(x, y, width, height, image);
@@ -49,6 +52,7 @@ class Dialog extends Sprite {
     }, 10);
   }
 }
+
 class startDialog extends Sprite {
   constructor(x, y, width, height, image) {
     super(x, y, width, height, image);
@@ -214,6 +218,7 @@ class Enemy extends Sprite {
     }
   }
 }
+
 class Player extends Sprite {
   constructor(x, y, width, height, imageGroup, speed) {
     super(x, y, width, height, "", speed);
@@ -441,7 +446,6 @@ class Player extends Sprite {
     this.y += this.accelerateUp;
     this.accelerateUp += this.accelerateDown;
     if (this.accelerateDown === 0) {
-      //
       if (this.direction === "hurt_left") {
         this.direction = "stopped_right";
         this.hurting = false;
@@ -452,8 +456,6 @@ class Player extends Sprite {
         this.hurting = false;
         this.speed = 0;
       }
-
-      //}
     }
     if (this.hurting) {
       if (
@@ -743,7 +745,7 @@ function createFlies() {
     left: [...enemy1.left],
     right: [...enemy1.right],
   });
-  allFlies[1] = new Enemy(1760, 474.5, 72, 36, {
+  allFlies[1] = new Enemy(1999, 474.5, 72, 36, {
     left: [...enemy1.left],
     right: [...enemy1.right],
   });
@@ -760,7 +762,7 @@ function createFlies() {
     left: [...enemy1.left],
     right: [...enemy1.right],
   });
-  allFlies[5] = new Enemy(4910, 130.5, 72, 36, {
+  allFlies[5] = new Enemy(4910, 330.5, 72, 36, {
     left: [...enemy1.left],
     right: [...enemy1.right],
   });
@@ -830,7 +832,7 @@ function createSlimes() {
     right: [...enemy2.right],
   });
 
-  allSlimes[1] = new Enemy(9330, 1232, 50, 28, {
+  allSlimes[1] = new Enemy(9654, 1162, 50, 28, {
     left: [...enemy2.left],
     right: [...enemy2.right],
   });
@@ -886,7 +888,7 @@ function createSnails() {
     right: [...enemy3.right],
   });
 
-  allSnails[3] = new Enemy(8570, 531, 50, 28, {
+  allSnails[3] = new Enemy(8770, 531, 50, 28, {
     left: [...enemy3.left],
     right: [...enemy3.right],
   });
