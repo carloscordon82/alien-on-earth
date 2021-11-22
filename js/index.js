@@ -1769,10 +1769,10 @@ function clearAndDraw() {
     level2Arrived = true;
     canvas.style = `background-color: rgb(77, 48, 6);
     cursor: pointer;
-    -webkit-transition: background-color 4s ease-out;
-    -moz-transition: background-color 4s ease-out;
-    -o-transition: background-color 4s ease-out;
-    transition: background-color 4s ease-out;`;
+    -webkit-transition: background-color 2s ease-out;
+    -moz-transition: background-color 2s ease-out;
+    -o-transition: background-color 2s ease-out;
+    transition: background-color 2s ease-out;`;
   }
 
   // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS
