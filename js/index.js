@@ -1617,11 +1617,6 @@ function checkObjects() {
       soundEffectHeart.play();
       if (player1.health < 12) player1.health++;
     }
-    if (images[coordY][coordX].code === "star") {
-      pause = true;
-      win = true;
-      youWin.showDialog();
-    }
     grabObject(coordY, coordX);
   }
 }
