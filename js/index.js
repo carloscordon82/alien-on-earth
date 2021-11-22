@@ -1775,7 +1775,7 @@ function clearAndDraw() {
     transition: background-color 2s ease-out;`;
   }
 
-  // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS
+  // THIS HELPS KEEP PLAYER MOVING AFTER JUMPING IN FRONT OF OBJECT - SIMULATES THE KEY PRESS //
   if (trueDirection === "right") {
     player1.moving({ keyCode: 39 });
   }
