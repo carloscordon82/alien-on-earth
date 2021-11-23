@@ -55,6 +55,7 @@ class Dialog extends Sprite {
       this.x = ctx.canvas.width / 2 - this.width / 2;
       this.y = ctx.canvas.height / 2 - this.height / 2;
       this.draw();
+      if (win) player1.draw();
     }, 10);
   }
 }
