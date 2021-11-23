@@ -42,10 +42,16 @@ class Dialog extends Sprite {
   showDialog() {
     setTimeout(() => {
       ctx.fillStyle = "#e0d1af";
-      ctx.globalAlpha = 0.9;
+      ctx.globalAlpha = 0.5;
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.globalAlpha = 1;
-      if (!win && !dead) toolBoard.draw();
+      player1.draw();
+      if (!win && !dead) {
+        toolBoard.draw();
+      } else {
+        toolsEarned.innerHTML = "";
+      }
+
       this.x = ctx.canvas.width / 2 - this.width / 2;
       this.y = ctx.canvas.height / 2 - this.height / 2;
       this.draw();
