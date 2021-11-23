@@ -5,6 +5,7 @@ body {
   background-color: rgba(255, 255, 255, 0.7);
   background-blend-mode: lighten;
   background-position: center;
+  background-position-y: -400px;
 }
 
 .game-board {
