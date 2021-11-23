@@ -1152,6 +1152,7 @@ function attachListeners() {
   }
 
   canvas.addEventListener("mousedown", function (event) {
+    canvas.style.cursor = "grabbing";
     //requestAnimationFrame(updateCanvas);
     dragStart = {
       mousex: event.pageX - canvas.offsetLeft,
@@ -1168,6 +1169,7 @@ function attachListeners() {
   });
 
   canvas.addEventListener("mouseup", function (event) {
+    canvas.style.cursor = "grab";
     if (start) {
       start = false;
       globalX = 0;
